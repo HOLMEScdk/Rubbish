@@ -13,8 +13,10 @@ tags: "some tags here"
 3. string
 4. bool
 5. null 
+
 ## Note
 $ means note   &nbsp;   "$" this is our note equals // in c or # in python
+
 ## Compound Type
 1. list => list means array , it acts like python list 
 1.  map => is a key value pair
