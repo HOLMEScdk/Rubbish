@@ -23,7 +23,7 @@ $ means note   &nbsp;   "$" this is our note equals // in c or # in python
 1. tuple => also likes array but is immutable
 1. mat => represent matrix  which can do something like numpy in python
 
-##Control Statement
+## Control Statement
 1. if {... } elif{ ...} else{....}
 1. switch (){ case(): ....; break}
 1. while(){....}
@@ -31,9 +31,9 @@ $ means note   &nbsp;   "$" this is our note equals // in c or # in python
 1. break continue which can break out of the loop statement or jump into the beginning of the loop to avoid going deep respectively
 1. struct Name{} =>  use "struct" to define your own data type 
 
-##Function
+## Function
 def(x,y){return xx}
-##Additional
+## Additional
 ### Input and Output
 x = input();
 print("%s%d%c",);
