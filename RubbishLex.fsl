@@ -3,10 +3,10 @@
    Lexer specification for the simple expression language.
 *)
 
-module ExprLex
+module RubbishLex
 
 open Microsoft.FSharp.Text.Lexing
-open ExprPar
+open RubbishPar
 
 let lexemeAsString lexbuf = 
     LexBuffer<char>.LexemeString lexbuf
@@ -29,6 +29,7 @@ let keyword s =
     | "def"     -> DEF
     | "import"  -> IMPORT
     | "return"  -> RETURN
+    | "lambda"  -> LAMBDA
     | _         -> NAME s
 }
 
