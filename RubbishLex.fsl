@@ -27,9 +27,17 @@ let keyword s =
     | "continue"-> CONTINUE
     | "struct"  -> STRUCT
     | "def"     -> DEF
+	| "none"    -> NONE
     | "import"  -> IMPORT
     | "return"  -> RETURN
-    | "lambda"  -> LAMBDA
+	| "and"		-> AND
+	| "or" 		-> OR
+	| "not"		-> NOT
+	| "global"  -> GLOBAL
+	| "try"		-> TRY
+	| "catch"	-> CATCH
+	| "finally" -> FINALLLY
+	| "lambda"	-> LAMBDA
     | _         -> NAME s
 }
 
@@ -38,12 +46,14 @@ rule Token = parse
   | '\n'            { lexbuf.EndPos <- lexbuf.EndPos.NextLine; Token lexbuf }
   | ['0'-'9']+      { CSTINT (System.Int32.Parse (lexemeAsString lexbuf)) }
   | ['a'-'z''A'-'Z']['a'-'z''A'-'Z''0'-'9''_']*
+  |	['!']['=']		{ NOTEQ }
   | ';'             { SEMI  }
   | ':'             { COLON }
   | '+'             { PLUS  } 
   | '-'             { MINUS } 
   | '*'             { TIMES }
   | '/'             { DIV   }
+  | '%'				{ MOD   }
   | '='             { EQ    } 
   | '('             { LPAR  } 
   | ')'             { RPAR  } 

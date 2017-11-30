@@ -43,3 +43,5 @@ import xxx;
 x = y return bool 
 ### Lambda
 f = lambda (x){x*x};
+### 
+try .... catch
