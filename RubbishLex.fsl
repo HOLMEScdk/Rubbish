@@ -1,6 +1,7 @@
 {
 (* File RubbishLex.fsl
    Lexer specification for the simple expression language.
+   Author K_HOLMES && Dr.DING
 *)
 
 module RubbishLex
@@ -11,8 +12,6 @@ open RubbishPar
 let lexemeAsString lexbuf = 
     LexBuffer<char>.LexemeString lexbuf
 
-(* Scan keywords as identifiers and use this function to distinguish them. *)
-(* If the set of keywords is large, use a hashtable instead.               *)
 
 let keyword s =
     match s with
@@ -28,19 +27,38 @@ let keyword s =
     | "struct"  -> STRUCT
     | "def"     -> DEF
 	| "none"    -> NONE
+	| "null"	-> NULL
     | "import"  -> IMPORT
     | "return"  -> RETURN
 	| "and"		-> AND
 	| "or" 		-> OR
 	| "not"		-> NOT
 	| "global"  -> GLOBAL
+	| "print"	-> PRINT
+	| "println"	-> PRINTLN
+	| "yield"	-> YIELD
 	| "try"		-> TRY
 	| "catch"	-> CATCH
 	| "finally" -> FINALLLY
 	| "lambda"	-> LAMBDA
+	| "true"	-> TRUE
+	| "false"	-> FALSE 
     | _         -> NAME s
 }
 
+let cEscape s = 
+    match s with 
+    | "\\\\" -> '\\'
+    | "\\\"" -> '\"'
+    | "\\a"  -> '\007'
+    | "\\b"  -> '\008'
+    | "\\t"  -> '\t'
+    | "\\n"  -> '\n'
+    | "\\v"  -> '\011'
+    | "\\f"  -> '\012'
+    | "\\r"  -> '\r'
+    | _      -> failwith "Lexer error: impossible C escape"
+}
 rule Token = parse
   | [' ' '\t' '\r'] { Token lexbuf }
   | '\n'            { lexbuf.EndPos <- lexbuf.EndPos.NextLine; Token lexbuf }
@@ -48,6 +66,7 @@ rule Token = parse
   | ['a'-'z''A'-'Z']['a'-'z''A'-'Z''0'-'9''_']*
   |	['!']['=']		{ NOTEQ }
   | ';'             { SEMI  }
+  | ','             { COMMA }  
   | ':'             { COLON }
   | '+'             { PLUS  } 
   | '-'             { MINUS } 
@@ -55,12 +74,33 @@ rule Token = parse
   | '/'             { DIV   }
   | '%'				{ MOD   }
   | '='             { EQ    } 
+  | ">="			{ GE	}
+  | "<="			{ LE 	}
+  | '>'				{ GT	}
+  | '<'				{ LT	}
+  | '&'				{ AMP	}
+  | '|'				{ OMP 	}
   | '('             { LPAR  } 
   | ')'             { RPAR  } 
   | '['             { LSQU  }
   | ']'             { RSQU  }
   | '{'             { LCUR  }
   | '}'             { RCUR  }
-  | '$'             { NOTE  } 
+  | '$'             { NOTE  }
+  | "$."			{ Comment lexbuf; Token lexbuf }
+  | '"'             { CSTSTRING (String [] lexbuf) }
   | eof             { EOF   }
   | _               { failwith "Lexer error: illegal symbol" }
+
+and Comment = parse
+   | "$."           { Comment lexbuf; Comment lexbuf }
+   | ".$"           { () }
+   | '\n'           { lexbuf.EndPos <- lexbuf.EndPos.NextLine; Comment lexbuf }
+   | (eof | '\026') { failwith "Lexer error: unterminated comment" }
+   | _              { Comment lexbuf }
+
+and EndLineComment = parse
+   | '\n'           { lexbuf.EndPos <- lexbuf.EndPos.NextLine }
+   | (eof | '\026') { () }
+   | _              { EndLineComment lexbuf }
+

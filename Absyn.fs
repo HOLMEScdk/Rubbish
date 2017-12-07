@@ -9,6 +9,7 @@ type expr =
   | Var of string
   | Let of string * expr * expr
   | Prim of string * expr * expr
+  | For of string * expr * expr
 
 type sinstr =
   | SCstI of int                        (* push integer           *)
