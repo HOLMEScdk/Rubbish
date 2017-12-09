@@ -72,8 +72,8 @@ Stmt:
      Expr SEMI                             { Expr($1)    }
   |  RETURN SEMI                           { Return(None)}
   |  RETURN Expr SEMI                      { Return(Some($2))  }
-  |  BREAK                                 { Break       }
-  |  CONTINUE                              { Continue    }
+  |  BREAK SEMI                            { Break       }
+  |  CONTINUE SEMI                         { Continue    }
   |  Block                                 { $1          }
   |  IF LPAR Expr RPAR Stmt IfConJud       { If((Some($3),$5)::$6)}
   |  SWITCH LPAR Expr RPAR LBRACE SwConJud RBRACE { Switch($3,$6)}
