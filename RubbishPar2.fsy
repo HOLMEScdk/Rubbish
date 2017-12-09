@@ -1,0 +1,149 @@
+%{
+  (* File Expr/ExprPar.fsy
+     Parser specification for the simple expression language.
+   *)
+open Absyn
+let compose1 f (g, s) = ((fun x -> g(f(x))), s)
+let nl = CstI 10
+%}
+
+%token <int> CSTINT CSTBOOL
+%token <float> CSTFLOAT
+%token <string> CSTSTRING NAME
+
+%token RETURN IF ELSE PRINT PRINTLN WHILE FOR IN SWITCH CASE
+%token PLUS MINUS TIMES DIV MOD
+%token NOT OR AND 
+%token EQ NE GT LT GE LE
+%token LPAR RPAR LCUR RCUR LBRACK RBRACK COMMA SEMI COLON ASSIGN
+%token DEF LAMBDA
+%token EOF
+
+%right ASSIGN             /* lowest precedence */
+%nonassoc PRINT PRINTLN
+%left OR
+%left AND
+%left EQ NE 
+%nonassoc GT LT GE LE
+%left PLUS MINUS
+%left TIMES DIV MOD 
+%nonassoc NOT 
+%nonassoc LAMBDA
+%nonassoc LBRACK          /* highest precedence  */
+
+%start Main
+%type <Absyn.program> Main 
+%%
+Main:
+    Topdecs EOF                         { Prog $1               }
+;
+Topdecs:
+    /* empty */                         { [] }
+  | Topdec Topdecs                      { $1 :: $2 }
+;
+Topdec: 
+    StmtOrDecSeq SEMI                   { $1 }
+  | Fundec                              { $1 }
+;
+
+Fundec:
+    DEF NAME LPAR Paramdecs RPAR Block { Fundec($2, $4, $6) }
+;
+
+Paramdecs:
+    /* empty */                         { [] }
+  | Paramdecs1                          { $1 }
+;
+
+Paramdecs1:
+    NAME                              { [$1]     }
+  | NAME COMMA Paramdecs1             { $1 :: $3 }
+;
+
+Block:
+    LCUR StmtOrDecSeq RCUR              { Block $2 }
+;
+StmtOrDecSeq:
+    /* empty */                         { [] }
+  | Stmt StmtOrDecSeq                   { Stmt $1 :: $2 }
+;
+Stmt: 
+    StmtM                               { $1 }
+  | StmtU                               { $1 }
+;
+StmtM:  /* No unbalanced if-else */
+    Expr SEMI                           { Expr($1)             }
+  | RETURN SEMI                         { Return None          }
+  | RETURN Expr SEMI                    { Return(Some($2))     }
+  | Block                               { $1                   }
+  | IF LPAR Expr RPAR StmtM ELSE StmtM  { If($3, $5, $7)       }
+  | WHILE LPAR Expr RPAR StmtM          { While($3, $5)        }
+  | FOR LPAR NAME IN Expr RPAR StmtM    { For($3,$5,$7)        }
+  | SWITCH LPAR Expr RPAR LCUR CASESTMT RCUR 
+                                        { Switch($3,$6)        }
+;
+
+CASESTMT:
+                                        { []                   }
+  | CASE Expr COLON StmtM CASESTMT      { ($2,$4)::$5          }
+
+StmtU:
+    IF LPAR Expr RPAR StmtM ELSE StmtU  { If($3, $5, $7)       }
+  | IF LPAR Expr RPAR Stmt              { If($3, $5, Block []) }
+  | WHILE LPAR Expr RPAR StmtU          { While($3, $5)        }
+;
+Expr: 
+    Access                              { Access $1            }
+  | ExprNotAccess                       { $1                   }
+;
+
+ExprNotAccess:
+    AtExprNotAccess                     { $1                   }
+  | Access ASSIGN Expr                  { Assign($1, $3)       }
+  | NAME LPAR Exprs RPAR                { Call($1, $3)         }  
+  | NOT Expr                            { Prim1("!", $2)       }
+  | PRINT Expr                          { Prim1("print", $2)   }
+  | PRINTLN                             { Prim1("println", nl) }
+  | Expr PLUS  Expr                     { Prim2("+",  $1, $3) }
+  | Expr MINUS Expr                     { Prim2("-",  $1, $3) }
+  | Expr TIMES Expr                     { Prim2("*",  $1, $3) }
+  | Expr DIV   Expr                     { Prim2("/",  $1, $3) }
+  | Expr MOD   Expr                     { Prim2("%",  $1, $3) }
+  | Expr EQ    Expr                     { Prim2("==", $1, $3) }
+  | Expr NE    Expr                     { Prim2("!=", $1, $3) }
+  | Expr GT    Expr                     { Prim2(">",  $1, $3) }
+  | Expr LT    Expr                     { Prim2("<",  $1, $3) }
+  | Expr GE    Expr                     { Prim2(">=", $1, $3) }
+  | Expr LE    Expr                     { Prim2("<=", $1, $3) }
+  | Expr AND Expr                       { Andalso($1, $3)     }
+  | Expr OR  Expr                       { Orelse($1, $3)      }
+;
+
+AtExprNotAccess:
+    Const                               { $1                  }
+  | LPAR ExprNotAccess RPAR             { $2                  }
+;
+
+Access:
+    NAME                                { AccVar $1           }
+  | LPAR Access RPAR                    { $2                  }  
+  | Access LBRACK Expr RBRACK           { AccIndex($1, $3)    }   
+;
+
+Exprs:
+    /* empty */                         { []       }
+  | Exprs1                              { $1       }
+;
+
+Exprs1:
+    Expr                                { [$1]     }
+  | Expr COMMA Exprs1                   { $1 :: $3 }
+;
+Const:
+    CSTINT                              { CstI $1       }
+  | CSTBOOL                             { CstB $1       }
+  | CSTFLOAT                            { CstF $1       }
+  | CSTSTRING                           { CstS $1       }
+  | MINUS CSTINT                        { CstI -$2      }
+  | MINUS CSTFLOAT                      { CstF -$2      }
+;

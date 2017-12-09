@@ -17,34 +17,32 @@ let keyword s =
     match s with
     | "if"      -> IF
     | "else"    -> ELSE
-    | "elif"    -> ELIF
     | "switch"  -> SWITCH
     | "case"    -> CASE
     | "while"   -> WHILE
     | "for"     -> FOR
     | "break"   -> BREAK
     | "continue"-> CONTINUE
-    | "struct"  -> STRUCT
     | "def"     -> DEF
-	| "none"    -> NONE
-	| "null"	-> NULL
+    | "null"    -> NULL
     | "import"  -> IMPORT
     | "return"  -> RETURN
-	| "and"		-> AND
-	| "or" 		-> OR
-	| "not"		-> NOT
-	| "global"  -> GLOBAL
-	| "print"	-> PRINT
-	| "println"	-> PRINTLN
-	| "yield"	-> YIELD
-	| "try"		-> TRY
-	| "catch"	-> CATCH
-	| "finally" -> FINALLLY
-	| "lambda"	-> LAMBDA
-	| "true"	-> TRUE
-	| "false"	-> FALSE 
+    | "and"     -> SEQAND
+    | "or"      -> SEQOR
+    | "not"     -> NOT
+    | "print" -> PRINT
+    | "println" -> PRINTLN
+    | "try"     -> TRY
+    | "catch" -> CATCH
+    | "finally" -> FINALLY
+    | "range"   -> RANGE
+    | "default" -> DEFAULT
+    | "true"    -> CSTBOOL 1
+    | "false" -> CSTBOOL 0 
+    | "in"     -> IN
+    | "lambda"  -> LAMBDA
     | _         -> NAME s
-}
+
 
 let cEscape s = 
     match s with 
@@ -62,9 +60,10 @@ let cEscape s =
 rule Token = parse
   | [' ' '\t' '\r'] { Token lexbuf }
   | '\n'            { lexbuf.EndPos <- lexbuf.EndPos.NextLine; Token lexbuf }
+  | ['0'-'9']+'.'['0'-'9']+      { CSTFLOAT (System.Double.Parse (lexemeAsString lexbuf)) }
   | ['0'-'9']+      { CSTINT (System.Int32.Parse (lexemeAsString lexbuf)) }
   | ['a'-'z''A'-'Z']['a'-'z''A'-'Z''0'-'9''_']*
-  |	['!']['=']		{ NOTEQ }
+                    { keyword (lexemeAsString lexbuf) }
   | ';'             { SEMI  }
   | ','             { COMMA }  
   | ':'             { COLON }
@@ -72,22 +71,22 @@ rule Token = parse
   | '-'             { MINUS } 
   | '*'             { TIMES }
   | '/'             { DIV   }
-  | '%'				{ MOD   }
-  | '='             { EQ    } 
-  | ">="			{ GE	}
-  | "<="			{ LE 	}
-  | '>'				{ GT	}
-  | '<'				{ LT	}
-  | '&'				{ AMP	}
-  | '|'				{ OMP 	}
+  | '%'             { MOD   }
+  | '='             { ASSIGN} 
+  | ">="            { GE  }
+  | "<="            { LE  }
+  | "=="            { EQ    }
+  | "!="            { NE }
+  | '>'             { GT   }
+  | '<'             { LT   }
   | '('             { LPAR  } 
   | ')'             { RPAR  } 
-  | '['             { LSQU  }
-  | ']'             { RSQU  }
-  | '{'             { LCUR  }
-  | '}'             { RCUR  }
-  | '$'             { NOTE  }
-  | "$."			{ Comment lexbuf; Token lexbuf }
+  | '['             { LBRACK  }
+  | ']'             { RBRACK  }
+  | '{'             { LBRACE  }
+  | '}'             { RBRACE  }
+  | '$'             { EndLineComment lexbuf; Token lexbuf  }
+  | "$."            { Comment lexbuf; Token lexbuf }
   | '"'             { CSTSTRING (String [] lexbuf) }
   | eof             { EOF   }
   | _               { failwith "Lexer error: illegal symbol" }
@@ -103,4 +102,20 @@ and EndLineComment = parse
    | '\n'           { lexbuf.EndPos <- lexbuf.EndPos.NextLine }
    | (eof | '\026') { () }
    | _              { EndLineComment lexbuf }
-
+and String chars = parse 
+  | '"'
+      { Microsoft.FSharp.Core.String.concat "" (List.map string (List.rev chars)) }
+  | '\\' ['\\' '"' 'a' 'b' 't' 'n' 'v' 'f' 'r']
+      { String (cEscape (lexemeAsString lexbuf) :: chars) lexbuf }
+  | "''" 
+      { String ('\'' :: chars) lexbuf }
+  | '\\'
+      { failwith "Lexer error: illegal escape sequence" }
+  | (eof | '\026')
+      { failwith "Lexer error: unterminated string" }
+  | ['\n' '\r']
+      { failwith "Lexer error: newline in string" }
+  | ['\000'-'\031' '\127' '\255']
+      { failwith "Lexer error: invalid character in string" }
+  | _
+      { String (char (lexbuf.LexemeChar 0) :: chars) lexbuf }

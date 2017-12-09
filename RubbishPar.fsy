@@ -2,40 +2,149 @@
   (* File Expr/ExprPar.fsy
      Parser specification for the simple expression language.
    *)
-
-  open Absyn
+open Absyn
 %}
 
-%token <int> CSTINT
-%token <string> NAME
-%token PLUS MINUS TIMES DIVIDE EQ
-%token IF ELSE ELIF SWITCH CASE WHILE FOR BERAK CONTINUE STRUCT DEF IMPORT RETURN LAMBDA
-%token NOTE SEMI COLON
-%token LPAR RPAR LSQU RSQU LCUR RCUR
+%token <float> CSTFLOAT
+%token <int> CSTINT CSTBOOL
+%token <string> CSTSTRING NAME
+
+%token COMMA SEMI COLON PRINT PRINTLN RANGE NULL IMPORT LAMBDA
+%token WHILE FOR IN IF ELSE ELIF SWITCH CASE DEFAULT BREAK CONTINUE TRY CATCH FINALLY
+%token LPAR RPAR LBRACE RBRACE LBRACK RBRACK
+%token PLUS MINUS TIMES DIV MOD 
+%token EQ NE GT LT GE LE ASSIGN
+%token NOT SEQOR SEQAND
+%token DEF RETURN 
 %token EOF
 
-%left MINUS PLUS        /* lowest precedence  */
-%left TIMES DIV         /* highest precedence */
+%right ASSIGN             /* lowest precedence */
+%nonassoc PRINT
+%left SEQOR
+%left SEQAND
+%left EQ NE 
+%nonassoc GT LT GE LE
+%left PLUS MINUS
+%left TIMES DIV MOD 
+%nonassoc NOT AMP 
+%nonassoc LBRACK          /* highest precedence  */
 
 %start Main
-%type <Absyn.expr> Main 
-
+%type <Absyn.program> Main 
 %%
-
 Main:
-    Expr EOF                            { $1                }
+    Topdecs EOF                         { Prog $1               }
+;
+Topdecs:
+    /* empty */                         { [] }
+  | Topdec Topdecs                      { $1 :: $2 }
+;
+Topdec: 
+    StatExec                            { Main $1 }
+  | Fundec                              { $1 }
 ;
 
+
+Fundec:
+    DEF NAME LPAR Paramdecs RPAR Block { Fundec($2, $4, $6) }
+;
+
+Paramdecs:
+    /* empty */                         { [] }
+  | Paramdecs1                          { $1 }
+;
+
+Paramdecs1:
+    NAME                                { [$1]     }
+  | NAME COMMA Paramdecs1               { $1 :: $3 }
+;
+
+Block:
+    LBRACE StatExec RBRACE              { Block $2 }
+;
+
+StatExec:
+    /* empty */                         { [] }
+  | Stmt StatExec                       { Stmt $1 :: $2 }
+;
+
+Stmt:
+     Expr SEMI                             { Expr($1)    }
+  |  RETURN SEMI                           { Return(None)}
+  |  RETURN Expr SEMI                      { Return(Some($2))  }
+  |  BREAK                                 { Break       }
+  |  CONTINUE                              { Continue    }
+  |  Block                                 { $1          }
+  |  IF LPAR Expr RPAR Stmt IfConJud       { If((Some($3),$5)::$6)}
+  |  SWITCH LPAR Expr RPAR LBRACE SwConJud RBRACE { Switch($3,$6)}
+  |  WHILE LPAR Expr RPAR Stmt             { While($3,$5) }
+  |  FOR LPAR NAME IN RANGE LPAR Expr RPAR RPAR Stmt { For($3,$7,$10)}
+  |  TRY Block CATCH Block                 { TryCatchFinal($2,$4,None) }
+  |  TRY Block CATCH Block FINALLY Block   { TryCatchFinal($2,$4,Some($6))}
+  |  IMPORT NAME SEMI                      { Import($2)}
+  |  LAMBDA Paramdecs COLON Stmt           { Lambda($2,$4)}
+
+IfConJud:
+     /* empty */                           { []          }
+  |  ELSE Stmt                             { [(None,$2)] }
+  |  ELIF LPAR Expr RPAR Stmt IfConJud     { (Some($3),$5)::$6 }
+
+SwConJud:
+     /* empty */                           { []          }
+  |  DEFAULT COLON Stmt                    { [(None,$3)] }
+  |  CASE LPAR Expr RPAR COLON Stmt SwConJud
+                                           { (Some($3),$6)::$7 }
+
 Expr:
-    Expr SEMI                           { $1                }
-  | NAME                                { Var $1            }
-  | CSTINT                              { CstI $1           }
-  | MINUS CSTINT                        { CstI (- $2)       }
-  | LPAR Expr RPAR                      { $2                }
-  | LSQU Expr RSQU                      { $2                }
-  | LCUR Expr RCUR                      { $2                }
-  | NAME EQ Expr                        { Let($2, $4, $6)   }
-  | Expr TIMES Expr                     { Prim("*", $1, $3) }
-  | Expr PLUS Expr                      { Prim("+", $1, $3) }  
-  | Expr MINUS Expr                     { Prim("-", $1, $3) } 
+     Access                                { Access $1}
+  |  ExprNotAccess                         { $1       }
+
+Access:
+     NAME                                  { AccVar $1}
+  |  Access LBRACK Expr RBRACK             { AccIndex($1,$3)}
+
+ExprNotAccess:
+    AtExprNotAccess                     { $1                  }
+  | Access ASSIGN Expr                  { Assign($1, $3)      }
+  | NAME LPAR Exprs RPAR                { Call($1, $3)        } 
+  | NOT Expr                            { Prim1("!", $2)      }
+  | PRINT Expr                          { Prim1("printi", $2) }
+  | PRINTLN                             { Prim1("printc", CstI 10) }
+  | Expr PLUS  Expr                     { Prim2("+",  $1, $3) }
+  | Expr MINUS Expr                     { Prim2("-",  $1, $3) }
+  | Expr TIMES Expr                     { Prim2("*",  $1, $3) }
+  | Expr DIV   Expr                     { Prim2("/",  $1, $3) }
+  | Expr MOD   Expr                     { Prim2("%",  $1, $3) }
+  | Expr EQ    Expr                     { Prim2("==", $1, $3) }
+  | Expr NE    Expr                     { Prim2("!=", $1, $3) }
+  | Expr GT    Expr                     { Prim2(">",  $1, $3) }
+  | Expr LT    Expr                     { Prim2("<",  $1, $3) }
+  | Expr GE    Expr                     { Prim2(">=", $1, $3) }
+  | Expr LE    Expr                     { Prim2("<=", $1, $3) }
+  | Expr SEQAND Expr                    { Andalso($1, $3)     }
+  | Expr SEQOR  Expr                    { Orelse($1, $3)      }
+;
+     
+AtExprNotAccess:
+    Const                               { $1                  }
+  | LPAR ExprNotAccess RPAR             { $2                  }
+
+Exprs:
+    /* empty */                         { []       }
+  | Exprs1                              { $1       }
+;
+
+Exprs1:
+    Expr                                { [$1]     }
+  | Expr COMMA Exprs1                   { $1 :: $3 }
+;
+
+Const:
+    CSTINT                              { CstI $1       }
+  | CSTBOOL                             { CstI $1       }
+  | MINUS CSTINT                        { CstI -$2      }
+  | CSTFLOAT                            { CstF $1       }
+  | MINUS CSTFLOAT                      { CstF -$2      }
+  | CSTSTRING                           { CstS $1       }
+  | NULL                                { Null       }
 ;

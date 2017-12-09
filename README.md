@@ -12,14 +12,14 @@ tags: "some tags here"
 2. float
 3. string
 4. bool
-5. null 
+5. null
 
 ## Note
 $ means note   &nbsp;   "$" this is our note equals // in c or # in python
 
 ## Compound Type
 1. list => list means array , it acts like python list 
-1.  map => is a key value pair
+1. map => is a key value pair
 1. tuple => also likes array but is immutable
 1. mat => represent matrix  which can do something like numpy in python
 
