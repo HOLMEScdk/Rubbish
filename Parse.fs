@@ -1,4 +1,4 @@
-(* Lexing and parsing of micro-C programs using fslex and fsyacc *)
+(* Lexing and parsing of Rubbish programs using fslex and fsyacc *)
 
 module Parse
 

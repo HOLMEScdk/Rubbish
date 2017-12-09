@@ -1,5 +1,5 @@
 %{
-  (* File Expr/ExprPar.fsy
+  (* File Rubbish/RubbishPar.fsy
      Parser specification for the simple expression language.
    *)
 open Absyn
@@ -33,7 +33,7 @@ open Absyn
 %type <Absyn.program> Main 
 %%
 Main:
-    Topdecs EOF                         { Prog $1               }
+    Topdecs EOF                         { Prog $1  }
 ;
 Topdecs:
     /* empty */                         { [] }
@@ -44,7 +44,7 @@ Topdec:
   | Fundec                              { $1 }
 ;
 
-
+/*function use def*/
 Fundec:
     DEF NAME LPAR Paramdecs RPAR Block { Fundec($2, $4, $6) }
 ;

@@ -1,4 +1,4 @@
-(* File Expr/Absyn.fs
+(* File Rubbbish/Absyn.fs
    Abstract syntax for the simple expression language 
  *)
 
@@ -7,7 +7,7 @@ module Absyn
 type typ =
   | TypI                             (* Type int                    *)
   | TypC                             (* Type char                   *)
-  | TypF                             (*	Type float   		        		*)
+  | TypF                             (*	Type float   		        *)
   | TypS                             (* Type string                 *)
   | TypA                             (* Array type                  *)
   | TypL                             (* List type                   *)

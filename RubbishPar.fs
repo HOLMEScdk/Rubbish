@@ -5,7 +5,7 @@ open Microsoft.FSharp.Text.Lexing
 open Microsoft.FSharp.Text.Parsing.ParseHelpers
 # 1 "RubbishPar.fsy"
 
-  (* File Expr/ExprPar.fsy
+  (* File Rubbish/RubbishPar.fsy
      Parser specification for the simple expression language.
    *)
 open Absyn

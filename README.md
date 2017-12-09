@@ -45,3 +45,7 @@ x = y return bool
 f = lambda (x){x*x};
 ### 
 try .... catch
+
+###
+Test Command 
+fsi -r FsLexYacc.Runtime.dll Absyn.fs RubbishPar.fs RubbishLex.fs Parse.fs
