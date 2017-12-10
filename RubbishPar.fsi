@@ -19,6 +19,7 @@ type token =
   | TIMES
   | DIV
   | MOD
+  | EXPO
   | LPAR
   | RPAR
   | LBRACE
@@ -72,6 +73,7 @@ type tokenId =
     | TOKEN_TIMES
     | TOKEN_DIV
     | TOKEN_MOD
+    | TOKEN_EXPO
     | TOKEN_LPAR
     | TOKEN_RPAR
     | TOKEN_LBRACE

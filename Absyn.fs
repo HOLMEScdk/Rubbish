@@ -51,6 +51,7 @@ and stmt =
   | TryCatchFinal of stmt * stmt * stmt option
   | Import of string
   | ExSemi
+  | Lambda of string list * expr
 
 and stmtordec =                                                    
   | Stmt of stmt                     (* A statement                 *)

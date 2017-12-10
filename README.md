@@ -3,8 +3,12 @@ layout: post
 title: compiler
 permalink: compiler.html
 description: Some Description
-date: 2017-11-25 12:24:19 +08:00
-tags: "some tags here"
+date: 2017-11-25T04:24:19.000Z
+tags:
+  - some
+  - tags
+  - here
+style: plain
 ---
 # Compiler Principle
 ##  Basic Data Type
@@ -46,6 +50,12 @@ f = lambda (x){x*x};
 ### 
 try .... catch
 
-###
-Test Command 
+### Run Parse Command 
+fslex --unicode RubbishLex.fsl
+fsyacc --module  RubbishPar RubbishPar.fsy
 fsi -r FsLexYacc.Runtime.dll Absyn.fs RubbishPar.fs RubbishLex.fs Parse.fs
+open Parse
+1.  fromFile("FileName")  can load the code and parse it
+2.  If you want to test a single line use fromString("Rubbish style")
+If you want to read more details about AST, please read TestParse.md
+

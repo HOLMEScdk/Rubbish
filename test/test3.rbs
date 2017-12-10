@@ -1,0 +1,11 @@
+def test(a,b){
+	a = a+b;
+	def inner(a,b){
+		return a+b;
+	}
+	return a;
+}
+
+lambda x,y,z:x+y/3*z;
+a = [23,4,[1,4],("tuple,in"),1.5];
+x = 3**5;
