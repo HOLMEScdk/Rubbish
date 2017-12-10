@@ -85,4 +85,23 @@ x = 3**5;
 ```
 ![2](Test_ScreenShot/2.png)
 
+## Code Show
+About while iteration and some bitwise operation, like and, or, xor, not
+
+```
+def main(){
+  while (n > 0) {
+    print n;
+    n = n - 1;
+  }
+  println;
+}
+a = 2 and 3;
+a = 4 or 5;
+a = 5 xor 6;
+a = not 5;
+
+```
+
+![3](Test_ScreenShot/3.png)
 

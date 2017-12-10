@@ -29,10 +29,11 @@ and expr =
   | Prim2 of string * expr * expr    (* Binary primitive operator   *)
   | Array of expr list                
   | Tuple of expr list                
-  | Andalso of expr * expr           (* Sequential and              *)
-  | Orelse of expr * expr            (* Sequential or               *)
-  | Call of string * expr list       (* Function call f(...)        *)
-                                                                   
+  | And of expr * expr           (* Sequential and              *)
+  | Or of expr * expr            (* Sequential or               *)
+  | Xor of expr * expr               (* Sequential xor              *)
+  | Call of string * expr list       (* Function call f(...)    *)    
+  
 and access =                                                       
   | AccVar of string                 (* Variable access        x    *)
   | AccIndex of access * expr        (* Array indexing         a[e] *)

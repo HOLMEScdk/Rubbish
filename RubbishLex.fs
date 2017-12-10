@@ -31,6 +31,7 @@ let keyword s =
     | "and"     -> SEQAND
     | "or"      -> SEQOR
     | "not"     -> NOT
+    | "xor"     -> SEQXOR
     | "print" -> PRINT
     | "println" -> PRINTLN
     | "try"     -> TRY
@@ -58,7 +59,7 @@ let cEscape s =
     | "\\r"  -> '\r'
     | _      -> failwith "Lexer error: impossible C escape"
 
-# 61 "RubbishLex.fs"
+# 62 "RubbishLex.fs"
 let trans : uint16[] array = 
     [| 
     (* State 0 *)
@@ -203,256 +204,256 @@ and String chars (lexbuf : Microsoft.FSharp.Text.Lexing.LexBuffer<_>) = _fslex_S
 and _fslex_Token  _fslex_state lexbuf =
   match _fslex_tables.Interpret(_fslex_state,lexbuf) with
   | 0 -> ( 
-# 61 "RubbishLex.fsl"
+# 62 "RubbishLex.fsl"
                                      Token lexbuf 
-# 208 "RubbishLex.fs"
+# 209 "RubbishLex.fs"
           )
   | 1 -> ( 
-# 62 "RubbishLex.fsl"
+# 63 "RubbishLex.fsl"
                                      lexbuf.EndPos <- lexbuf.EndPos.NextLine; Token lexbuf 
-# 213 "RubbishLex.fs"
+# 214 "RubbishLex.fs"
           )
   | 2 -> ( 
-# 63 "RubbishLex.fsl"
+# 64 "RubbishLex.fsl"
                                                   CSTFLOAT (System.Double.Parse (lexemeAsString lexbuf)) 
-# 218 "RubbishLex.fs"
+# 219 "RubbishLex.fs"
           )
   | 3 -> ( 
-# 64 "RubbishLex.fsl"
+# 65 "RubbishLex.fsl"
                                      CSTINT (System.Int32.Parse (lexemeAsString lexbuf)) 
-# 223 "RubbishLex.fs"
+# 224 "RubbishLex.fs"
           )
   | 4 -> ( 
-# 66 "RubbishLex.fsl"
+# 67 "RubbishLex.fsl"
                                      keyword (lexemeAsString lexbuf) 
-# 228 "RubbishLex.fs"
+# 229 "RubbishLex.fs"
           )
   | 5 -> ( 
-# 67 "RubbishLex.fsl"
+# 68 "RubbishLex.fsl"
                                      SEMI  
-# 233 "RubbishLex.fs"
+# 234 "RubbishLex.fs"
           )
   | 6 -> ( 
-# 68 "RubbishLex.fsl"
+# 69 "RubbishLex.fsl"
                                      COMMA 
-# 238 "RubbishLex.fs"
+# 239 "RubbishLex.fs"
           )
   | 7 -> ( 
-# 69 "RubbishLex.fsl"
+# 70 "RubbishLex.fsl"
                                      COLON 
-# 243 "RubbishLex.fs"
+# 244 "RubbishLex.fs"
           )
   | 8 -> ( 
-# 70 "RubbishLex.fsl"
+# 71 "RubbishLex.fsl"
                                      PLUS  
-# 248 "RubbishLex.fs"
+# 249 "RubbishLex.fs"
           )
   | 9 -> ( 
-# 71 "RubbishLex.fsl"
+# 72 "RubbishLex.fsl"
                                      MINUS 
-# 253 "RubbishLex.fs"
+# 254 "RubbishLex.fs"
           )
   | 10 -> ( 
-# 72 "RubbishLex.fsl"
+# 73 "RubbishLex.fsl"
                                      TIMES 
-# 258 "RubbishLex.fs"
+# 259 "RubbishLex.fs"
           )
   | 11 -> ( 
-# 73 "RubbishLex.fsl"
+# 74 "RubbishLex.fsl"
                                      EXPO  
-# 263 "RubbishLex.fs"
+# 264 "RubbishLex.fs"
           )
   | 12 -> ( 
-# 74 "RubbishLex.fsl"
+# 75 "RubbishLex.fsl"
                                      DIV   
-# 268 "RubbishLex.fs"
+# 269 "RubbishLex.fs"
           )
   | 13 -> ( 
-# 75 "RubbishLex.fsl"
+# 76 "RubbishLex.fsl"
                                      MOD   
-# 273 "RubbishLex.fs"
+# 274 "RubbishLex.fs"
           )
   | 14 -> ( 
-# 76 "RubbishLex.fsl"
+# 77 "RubbishLex.fsl"
                                      ASSIGN
-# 278 "RubbishLex.fs"
+# 279 "RubbishLex.fs"
           )
   | 15 -> ( 
-# 77 "RubbishLex.fsl"
+# 78 "RubbishLex.fsl"
                                      GE  
-# 283 "RubbishLex.fs"
+# 284 "RubbishLex.fs"
           )
   | 16 -> ( 
-# 78 "RubbishLex.fsl"
+# 79 "RubbishLex.fsl"
                                      LE  
-# 288 "RubbishLex.fs"
+# 289 "RubbishLex.fs"
           )
   | 17 -> ( 
-# 79 "RubbishLex.fsl"
+# 80 "RubbishLex.fsl"
                                      EQ    
-# 293 "RubbishLex.fs"
+# 294 "RubbishLex.fs"
           )
   | 18 -> ( 
-# 80 "RubbishLex.fsl"
+# 81 "RubbishLex.fsl"
                                      NE 
-# 298 "RubbishLex.fs"
+# 299 "RubbishLex.fs"
           )
   | 19 -> ( 
-# 81 "RubbishLex.fsl"
+# 82 "RubbishLex.fsl"
                                      GT   
-# 303 "RubbishLex.fs"
+# 304 "RubbishLex.fs"
           )
   | 20 -> ( 
-# 82 "RubbishLex.fsl"
+# 83 "RubbishLex.fsl"
                                      LT   
-# 308 "RubbishLex.fs"
+# 309 "RubbishLex.fs"
           )
   | 21 -> ( 
-# 83 "RubbishLex.fsl"
+# 84 "RubbishLex.fsl"
                                      LPAR  
-# 313 "RubbishLex.fs"
+# 314 "RubbishLex.fs"
           )
   | 22 -> ( 
-# 84 "RubbishLex.fsl"
+# 85 "RubbishLex.fsl"
                                      RPAR  
-# 318 "RubbishLex.fs"
+# 319 "RubbishLex.fs"
           )
   | 23 -> ( 
-# 85 "RubbishLex.fsl"
+# 86 "RubbishLex.fsl"
                                      LBRACK  
-# 323 "RubbishLex.fs"
+# 324 "RubbishLex.fs"
           )
   | 24 -> ( 
-# 86 "RubbishLex.fsl"
+# 87 "RubbishLex.fsl"
                                      RBRACK  
-# 328 "RubbishLex.fs"
+# 329 "RubbishLex.fs"
           )
   | 25 -> ( 
-# 87 "RubbishLex.fsl"
+# 88 "RubbishLex.fsl"
                                      LBRACE  
-# 333 "RubbishLex.fs"
+# 334 "RubbishLex.fs"
           )
   | 26 -> ( 
-# 88 "RubbishLex.fsl"
+# 89 "RubbishLex.fsl"
                                      RBRACE  
-# 338 "RubbishLex.fs"
+# 339 "RubbishLex.fs"
           )
   | 27 -> ( 
-# 89 "RubbishLex.fsl"
+# 90 "RubbishLex.fsl"
                                      EndLineComment lexbuf; Token lexbuf  
-# 343 "RubbishLex.fs"
+# 344 "RubbishLex.fs"
           )
   | 28 -> ( 
-# 90 "RubbishLex.fsl"
+# 91 "RubbishLex.fsl"
                                      Comment lexbuf; Token lexbuf 
-# 348 "RubbishLex.fs"
+# 349 "RubbishLex.fs"
           )
   | 29 -> ( 
-# 91 "RubbishLex.fsl"
+# 92 "RubbishLex.fsl"
                                      CSTSTRING (String [] lexbuf) 
-# 353 "RubbishLex.fs"
+# 354 "RubbishLex.fs"
           )
   | 30 -> ( 
-# 92 "RubbishLex.fsl"
+# 93 "RubbishLex.fsl"
                                      EOF   
-# 358 "RubbishLex.fs"
+# 359 "RubbishLex.fs"
           )
   | 31 -> ( 
-# 93 "RubbishLex.fsl"
+# 94 "RubbishLex.fsl"
                                      failwith "Lexer error: illegal symbol" 
-# 363 "RubbishLex.fs"
+# 364 "RubbishLex.fs"
           )
   | _ -> failwith "Token"
 (* Rule Comment *)
 and _fslex_Comment  _fslex_state lexbuf =
   match _fslex_tables.Interpret(_fslex_state,lexbuf) with
   | 0 -> ( 
-# 96 "RubbishLex.fsl"
+# 97 "RubbishLex.fsl"
                                      Comment lexbuf; Comment lexbuf 
-# 372 "RubbishLex.fs"
+# 373 "RubbishLex.fs"
           )
   | 1 -> ( 
-# 97 "RubbishLex.fsl"
+# 98 "RubbishLex.fsl"
                                      () 
-# 377 "RubbishLex.fs"
+# 378 "RubbishLex.fs"
           )
   | 2 -> ( 
-# 98 "RubbishLex.fsl"
+# 99 "RubbishLex.fsl"
                                      lexbuf.EndPos <- lexbuf.EndPos.NextLine; Comment lexbuf 
-# 382 "RubbishLex.fs"
+# 383 "RubbishLex.fs"
           )
   | 3 -> ( 
-# 99 "RubbishLex.fsl"
+# 100 "RubbishLex.fsl"
                                      failwith "Lexer error: unterminated comment" 
-# 387 "RubbishLex.fs"
+# 388 "RubbishLex.fs"
           )
   | 4 -> ( 
-# 100 "RubbishLex.fsl"
+# 101 "RubbishLex.fsl"
                                      Comment lexbuf 
-# 392 "RubbishLex.fs"
+# 393 "RubbishLex.fs"
           )
   | _ -> failwith "Comment"
 (* Rule EndLineComment *)
 and _fslex_EndLineComment  _fslex_state lexbuf =
   match _fslex_tables.Interpret(_fslex_state,lexbuf) with
   | 0 -> ( 
-# 103 "RubbishLex.fsl"
+# 104 "RubbishLex.fsl"
                                      lexbuf.EndPos <- lexbuf.EndPos.NextLine 
-# 401 "RubbishLex.fs"
+# 402 "RubbishLex.fs"
           )
   | 1 -> ( 
-# 104 "RubbishLex.fsl"
+# 105 "RubbishLex.fsl"
                                      () 
-# 406 "RubbishLex.fs"
+# 407 "RubbishLex.fs"
           )
   | 2 -> ( 
-# 105 "RubbishLex.fsl"
+# 106 "RubbishLex.fsl"
                                      EndLineComment lexbuf 
-# 411 "RubbishLex.fs"
+# 412 "RubbishLex.fs"
           )
   | _ -> failwith "EndLineComment"
 (* Rule String *)
 and _fslex_String chars _fslex_state lexbuf =
   match _fslex_tables.Interpret(_fslex_state,lexbuf) with
   | 0 -> ( 
-# 108 "RubbishLex.fsl"
+# 109 "RubbishLex.fsl"
                        Microsoft.FSharp.Core.String.concat "" (List.map string (List.rev chars)) 
-# 420 "RubbishLex.fs"
+# 421 "RubbishLex.fs"
           )
   | 1 -> ( 
-# 110 "RubbishLex.fsl"
+# 111 "RubbishLex.fsl"
                        String (cEscape (lexemeAsString lexbuf) :: chars) lexbuf 
-# 425 "RubbishLex.fs"
+# 426 "RubbishLex.fs"
           )
   | 2 -> ( 
-# 112 "RubbishLex.fsl"
+# 113 "RubbishLex.fsl"
                        String ('\'' :: chars) lexbuf 
-# 430 "RubbishLex.fs"
+# 431 "RubbishLex.fs"
           )
   | 3 -> ( 
-# 114 "RubbishLex.fsl"
+# 115 "RubbishLex.fsl"
                        failwith "Lexer error: illegal escape sequence" 
-# 435 "RubbishLex.fs"
+# 436 "RubbishLex.fs"
           )
   | 4 -> ( 
-# 116 "RubbishLex.fsl"
+# 117 "RubbishLex.fsl"
                        failwith "Lexer error: unterminated string" 
-# 440 "RubbishLex.fs"
+# 441 "RubbishLex.fs"
           )
   | 5 -> ( 
-# 118 "RubbishLex.fsl"
+# 119 "RubbishLex.fsl"
                        failwith "Lexer error: newline in string" 
-# 445 "RubbishLex.fs"
+# 446 "RubbishLex.fs"
           )
   | 6 -> ( 
-# 120 "RubbishLex.fsl"
+# 121 "RubbishLex.fsl"
                        failwith "Lexer error: invalid character in string" 
-# 450 "RubbishLex.fs"
+# 451 "RubbishLex.fs"
           )
   | 7 -> ( 
-# 122 "RubbishLex.fsl"
+# 123 "RubbishLex.fsl"
                        String (char (lexbuf.LexemeChar 0) :: chars) lexbuf 
-# 455 "RubbishLex.fs"
+# 456 "RubbishLex.fs"
           )
   | _ -> failwith "String"
 

@@ -30,6 +30,7 @@ let keyword s =
     | "and"     -> SEQAND
     | "or"      -> SEQOR
     | "not"     -> NOT
+    | "xor"     -> SEQXOR
     | "print" -> PRINT
     | "println" -> PRINTLN
     | "try"     -> TRY
