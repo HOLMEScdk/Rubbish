@@ -48,13 +48,13 @@ and stmt =
   | Block of stmtordec list          (* Block: grouping and scope   *)
   | TryCatchFinal of stmt * stmt * stmt option
   | Import of string
-  | Lambda of string list * stmt
-                                                                   
+  | ExSemi
+
 and stmtordec =                                                    
   | Stmt of stmt                     (* A statement                 *)
+  | Fundec of string option * string list * stmt
 
 and topdec = 
-  | Fundec of string * string list * stmt
   | Main of stmtordec list
 
 and program = 

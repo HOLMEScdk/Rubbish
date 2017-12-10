@@ -23,10 +23,11 @@ open Absyn
 %left SEQOR
 %left SEQAND
 %left EQ NE 
-%nonassoc GT LT GE LE
 %left PLUS MINUS
 %left TIMES DIV MOD 
+%left GT LT GE LE
 %nonassoc NOT AMP 
+%left LPAR
 %nonassoc LBRACK          /* highest precedence  */
 
 %start Main
@@ -41,12 +42,11 @@ Topdecs:
 ;
 Topdec: 
     StatExec                            { Main $1 }
-  | Fundec                              { $1 }
 ;
 
 /*function use def*/
 Fundec:
-    DEF NAME LPAR Paramdecs RPAR Block { Fundec($2, $4, $6) }
+  |  DEF NAME LPAR Paramdecs RPAR Block { Fundec(Some($2), $4, $6) }
 ;
 
 Paramdecs:
@@ -66,10 +66,12 @@ Block:
 StatExec:
     /* empty */                         { [] }
   | Stmt StatExec                       { Stmt $1 :: $2 }
+  | Fundec StatExec                     { $1::$2        }
 ;
 
 Stmt:
-     Expr SEMI                             { Expr($1)    }
+     SEMI                                  { ExSemi      }
+  |  Expr SEMI                             { Expr($1)    }
   |  RETURN SEMI                           { Return(None)}
   |  RETURN Expr SEMI                      { Return(Some($2))  }
   |  BREAK SEMI                            { Break       }
@@ -82,7 +84,6 @@ Stmt:
   |  TRY Block CATCH Block                 { TryCatchFinal($2,$4,None) }
   |  TRY Block CATCH Block FINALLY Block   { TryCatchFinal($2,$4,Some($6))}
   |  IMPORT NAME SEMI                      { Import($2)}
-  |  LAMBDA Paramdecs COLON Stmt           { Lambda($2,$4)}
 
 IfConJud:
      /* empty */                           { []          }

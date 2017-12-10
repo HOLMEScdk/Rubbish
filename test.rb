@@ -1,5 +1,5 @@
 def test(x){
-	test(1);
+	test(1);;;
 	return x;
 	return 1 and 2;
 	return null;
@@ -40,7 +40,6 @@ for(x in range(2))
 		break;
 	}
 	a = test(1);
-	lambda x:x+1;
 	print(1);
 	true;
 }
