@@ -1,3 +1,7 @@
-if(x>=(77+22)){
-	
+def main(){
+  while (n > 0) {
+    print n;
+    n = n - 1;
+  }
+  println;
 }

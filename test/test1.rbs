@@ -1,3 +1,7 @@
+$tests
+$.
+123
+.$
 def x(a){
 	a = 1;
 	def y(b){

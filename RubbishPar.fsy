@@ -107,7 +107,9 @@ Access:
 ExprNotAccess:
     AtExprNotAccess                     { $1                  }
   | Access ASSIGN Expr                  { Assign($1, $3)      }
-  | NAME LPAR Exprs RPAR                { Call($1, $3)        } 
+  | LBRACK List RBRACK                  { Array($2)           }
+  | LPAR List RPAR                      { Tuple($2)           }
+  | NAME LPAR Exprs RPAR                { Call($1, $3)        }
   | NOT Expr                            { Prim1("!", $2)      }
   | PRINT Expr                          { Prim1("printi", $2) }
   | PRINTLN                             { Prim1("printc", CstI 10) }
@@ -125,7 +127,12 @@ ExprNotAccess:
   | Expr SEQAND Expr                    { Andalso($1, $3)     }
   | Expr SEQOR  Expr                    { Orelse($1, $3)      }
 ;
-     
+
+List:
+    /*empty*/                           {[]}
+  | Expr                                {[$1]}
+  | Expr COMMA List                     {$1::$3}
+
 AtExprNotAccess:
     Const                               { $1                  }
   | LPAR ExprNotAccess RPAR             { $2                  }
