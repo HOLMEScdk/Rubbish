@@ -41,6 +41,7 @@ type token =
   | TRY
   | CATCH
   | FINALLY
+  | CLASS
   | COMMA
   | SEMI
   | COLON
@@ -96,6 +97,7 @@ type tokenId =
     | TOKEN_TRY
     | TOKEN_CATCH
     | TOKEN_FINALLY
+    | TOKEN_CLASS
     | TOKEN_COMMA
     | TOKEN_SEMI
     | TOKEN_COLON
@@ -118,6 +120,7 @@ type nonTerminalId =
     | NONTERM_Topdecs
     | NONTERM_Topdec
     | NONTERM_Fundec
+    | NONTERM_Classdec
     | NONTERM_Paramdecs
     | NONTERM_Paramdecs1
     | NONTERM_Block

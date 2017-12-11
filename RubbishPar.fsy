@@ -10,7 +10,7 @@ open Absyn
 %token <string> CSTSTRING NAME
 
 %token COMMA SEMI COLON PRINT PRINTLN RANGE NULL IMPORT LAMBDA
-%token WHILE FOR IN IF ELSE ELIF SWITCH CASE DEFAULT BREAK CONTINUE TRY CATCH FINALLY
+%token WHILE FOR IN IF ELSE ELIF SWITCH CASE DEFAULT BREAK CONTINUE TRY CATCH FINALLY CLASS
 %token LPAR RPAR LBRACE RBRACE LBRACK RBRACK
 %token PLUS MINUS TIMES DIV MOD EXPO
 %token EQ NE GT LT GE LE ASSIGN
@@ -50,6 +50,9 @@ Fundec:
   |  DEF NAME LPAR Paramdecs RPAR Block { Fundec(Some($2), $4, $6) }
 ;
 
+Classdec:
+  |  CLASS NAME LPAR Paramdecs RPAR Block{Classdec($2,$4,$6)}
+
 Paramdecs:
     /* empty */                         { [] }
   | Paramdecs1                          { $1 }
@@ -68,6 +71,7 @@ StatExec:
     /* empty */                         { [] }
   | Stmt StatExec                       { Stmt $1 :: $2 }
   | Fundec StatExec                     { $1::$2        }
+  | Classdec StatExec                   { $1::$2}
 ;
 
 Stmt:
@@ -86,6 +90,7 @@ Stmt:
   |  TRY Block CATCH Block FINALLY Block   { TryCatchFinal($2,$4,Some($6))}
   |  IMPORT NAME SEMI                      { Import($2)}
   |  LAMBDA Paramdecs COLON Expr           { Lambda($2,$4)            }
+
 IfConJud:
      /* empty */                           { []          }
   |  ELSE Stmt                             { [(None,$2)] }

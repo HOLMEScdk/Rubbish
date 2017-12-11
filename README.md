@@ -58,4 +58,3 @@ open Parse
 1.  fromFile("FileName")  can load the code and parse it
 2.  If you want to test a single line use fromString("Rubbish style")
 If you want to read more details about AST, please read Test_AST.md
-

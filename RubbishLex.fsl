@@ -42,6 +42,7 @@ let keyword s =
     | "false" -> CSTBOOL 0 
     | "in"     -> IN
     | "lambda"  -> LAMBDA
+    | "class"   -> CLASS
     | _         -> NAME s
 
 
