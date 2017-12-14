@@ -58,7 +58,7 @@ let cEscape s =
     | "\\v"  -> '\011'
     | "\\f"  -> '\012'
     | "\\r"  -> '\r'
-    | _      -> failwith "Lexer error: impossible C escape"
+    | _      -> failwith "Lexer error: impossible Rubbish escape"
 
 # 63 "RubbishLex.fs"
 let trans : uint16[] array = 

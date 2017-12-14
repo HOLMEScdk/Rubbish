@@ -1,0 +1,17 @@
+def test(a,b){
+	a = a+b;
+	def inner(a,b){
+		return a+b;
+	}
+	return a;
+}
+b = 2;
+a = 1;
+def test1(a,b){
+	a = a+b;
+	def inner(a,b){
+		return a+b;
+	}
+	return a;
+}
+a = 1;

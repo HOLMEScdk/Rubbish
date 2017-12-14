@@ -57,7 +57,7 @@ let cEscape s =
     | "\\v"  -> '\011'
     | "\\f"  -> '\012'
     | "\\r"  -> '\r'
-    | _      -> failwith "Lexer error: impossible C escape"
+    | _      -> failwith "Lexer error: impossible Rubbish escape"
 }
 rule Token = parse
   | [' ' '\t' '\r'] { Token lexbuf }
