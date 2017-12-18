@@ -1,4 +1,4 @@
-## CODE SHOW
+## CODE SHOW 1
 Normal Grammer 
 ```
 $tests
@@ -66,7 +66,7 @@ import name;
 ![1](Test_ScreenShot/1.png)
 
 
-## Code Show
+## Code Show 2
 Inner define function and some special grammer style
 
 ```
@@ -85,7 +85,7 @@ x = 3**5;
 ```
 ![2](Test_ScreenShot/2.png)
 
-## Code Show
+## Code Show 3
 About while iteration and some bitwise operation, like and, or, xor, not
 
 ```
@@ -104,4 +104,52 @@ a = not 5;
 ```
 
 ![3](Test_ScreenShot/3.png)
+
+## Code Show 4
+
+```
+x = 3;
+x = 3 + 2;
+x = 3 * 2;
+x = 3 ** 2;
+x = 5;
+while(x>2){
+	x = x - 1;
+}
+
+print x;
+println ;
+
+y = 10;
+y = y % x;
+y = y / x ;
+
+z = 20;
+z = z - 10;
+z = z * 1.05;
+
+s = "Hello world";
+print s;
+
+a1 = [1,2,3];
+a2 = ["1",2,2.5];
+print a1[1];
+
+x = 10;
+while (true){
+	x = x - 2;
+	if (x <= 0) {
+		break;
+	}
+	else{
+		print x;
+	}
+}
+
+for(i in range(10)){
+	print i;
+}
+```
+
+![4](Test_ScreenShot/4.png)
 
