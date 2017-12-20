@@ -3,7 +3,7 @@
    Lexer specification for the simple expression language.
    Author K_HOLMES && Dr.DING
 *)
-
+#indent "off"
 module RubbishLex
 
 open Microsoft.FSharp.Text.Lexing
@@ -17,6 +17,7 @@ let keyword s =
     match s with
     | "if"      -> IF
     | "else"    -> ELSE
+    | "elif"    -> ELIF	
     | "switch"  -> SWITCH
     | "case"    -> CASE
     | "while"   -> WHILE
