@@ -1027,7 +1027,7 @@ let _fsyacc_reductions ()  =    [|
                 (
                    (
 # 120 "RubbishPar.fsy"
-                                                               Prim1("printi", _2) 
+                                                               Prim1("print", _2) 
                    )
 # 120 "RubbishPar.fsy"
                  : 'ExprNotAccess));
@@ -1037,7 +1037,7 @@ let _fsyacc_reductions ()  =    [|
                 (
                    (
 # 121 "RubbishPar.fsy"
-                                                               Prim1("printc", CstI 10) 
+                                                               Prim1("println", CstI 10) 
                    )
 # 121 "RubbishPar.fsy"
                  : 'ExprNotAccess));
@@ -1338,7 +1338,7 @@ let _fsyacc_reductions ()  =    [|
                 (
                    (
 # 160 "RubbishPar.fsy"
-                                                               CstI _1       
+                                                               CstB _1       
                    )
 # 160 "RubbishPar.fsy"
                  : 'Const));

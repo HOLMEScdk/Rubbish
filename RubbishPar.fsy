@@ -117,8 +117,8 @@ ExprNotAccess:
   | LPAR List RPAR                      { Tuple($2)           }
   | NAME LPAR Exprs RPAR                { Call($1, $3)        }
   | NOT Expr                            { Prim1("!", $2)      }
-  | PRINT Expr                          { Prim1("printi", $2) }
-  | PRINTLN                             { Prim1("printc", CstI 10) }
+  | PRINT Expr                          { Prim1("print", $2) }
+  | PRINTLN                             { Prim1("println", CstI 10) }
   | Expr PLUS  Expr                     { Prim2("+",  $1, $3) }
   | Expr MINUS Expr                     { Prim2("-",  $1, $3) }
   | Expr TIMES Expr                     { Prim2("*",  $1, $3) }
@@ -157,7 +157,7 @@ Exprs1:
 
 Const:
     CSTINT                              { CstI $1       }
-  | CSTBOOL                             { CstI $1       }
+  | CSTBOOL                             { CstB $1       }
   | MINUS CSTINT                        { CstI -$2      }
   | CSTFLOAT                            { CstF $1       }
   | MINUS CSTFLOAT                      { CstF -$2      }
