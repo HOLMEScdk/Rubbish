@@ -1,0 +1,8 @@
+int main(void) {
+	int i;
+	int j;
+	int16 z;
+	i = 1;
+	j = 2 * 3;
+	return i - j;
+}
