@@ -1,0 +1,145 @@
+%{
+(*	File MicroC/CPar.fsy 
+	Parser specification for micro-C, a small imperative language
+	sestoft@itu.dk * 2009-09-29
+	No (real) shift/reduce conflicts thanks to Niels Kokholm.
+*)
+
+open MiniC.Compiler.Ast
+
+// Vardesc 返回的是一个 元组 (g,s)
+// g是类型构造函数，s是变量名
+%}
+%token BREAK WHILE IF NEW ELSE RETURN SIZE
+%token VOID INT FLOAT BOOL 
+%token LPAR RPAR LBRACE RBRACE LBRACK RBRACK SEMI COMMA ASSIGN DOT
+%token PLUS MINUS TIMES DIV MOD OR AND NOT
+%token EQ NE GT LT GE LE
+%token <string> IDENT
+%token TRUE FALSE
+%token <int> INT_LIT
+%token <float> FLOAT_LIT
+%token EOF
+
+%start Main 
+%type <MiniC.Compiler.Ast.Program> Main 
+%%
+
+Main:
+    Program EOF                      { $1 }
+;
+
+Program:
+  Decl_list                          { $1 }
+;
+
+Decl_list:
+    /* empty */                      { [] }
+  | Decl Decl_list                   { $1 :: $2 }
+;
+
+Decl: 
+    Var_decl                         { StaticVariableDeclaration($1) }
+  | Fun_decl                         { $1 }
+;
+
+Var_decl:
+    Type_spec IDENT SEMI             {ScalarVariableDeclaration($1,$2)   }
+  | Type_spec IDENT LBRACK RBRACK SEMI   {ArrayVariableDeclaration($1,$2)    }
+
+Type_spec:
+    VOID                             {Void}
+  | BOOL                             {Bool}
+  | INT                              {Int}
+  | FLOAT                            {Float}
+
+Fun_decl:
+    Type_spec IDENT LPAR Params RPAR Compound_stmt {FunctionDeclaration($1,$2,$4,$6)}
+
+Params:
+    Params_list                      {$1}
+  | VOID                             {[]}
+
+Params_list:
+    Param COMMA Params_list          {$1::$3}
+  | Param                            {[$1]}
+
+Param:
+    Type_spec IDENT                  {ScalarVariableDeclaration($1,$2)}
+  | Type_spec IDENT LBRACK RBRACK    {ArrayVariableDeclaration($1,$2)}
+
+Compound_stmt:
+    LBRACE Local_decls Stmt_list RBRACE {($2,$3)}
+
+Local_decls:
+    /* empty */                      {[]}
+  | Local_decl Local_decls           {$1::$2}
+
+Local_decl:
+    Type_spec IDENT SEMI             {ScalarVariableDeclaration($1,$2)}
+  | Type_spec IDENT LBRACK RBRACK SEMI {ArrayVariableDeclaration($1,$2)}
+
+Stmt_list:
+                                     {[]}
+  | Stmt Stmt_list                   {$1::$2}
+
+Stmt:
+    Expr_stmt                        {ExpressionStatement($1)}
+  | Compound_stmt                    {CompoundStatement($1)}
+  | If_stmt                          {$1}
+  | While_stmt                       {$1}
+  | Return_stmt                      {$1}
+  | BREAK SEMI                       {BreakStatement}
+
+Expr_stmt:
+    Expr SEMI                        {Expression($1)}
+  | SEMI                             {Nop}
+
+While_stmt:
+    WHILE LPAR Expr RPAR Stmt        {WhileStatement($3,$5)}
+
+If_stmt:
+    IF LPAR Expr RPAR Stmt           {IfStatement($3,$5,None)}
+  | IF LPAR Expr RPAR Stmt ELSE Stmt {IfStatement($3,$5,Some($7))}
+
+Return_stmt:
+    RETURN SEMI                      {ReturnStatement(None)}
+  | RETURN Expr SEMI                 {ReturnStatement(Some($2))}
+
+Expr:
+    IDENT ASSIGN Expr                {ScalarAssignmentExpression({Identifier = $1;},$3)}
+  | IDENT LBRACK Expr RBRACK ASSIGN Expr {ArrayAssignmentExpression({Identifier = $1;},$3,$6)}
+  | Expr OR Expr                     {BinaryExpression($1,ConditionalOr,$3)}
+  | Expr AND Expr                    {BinaryExpression($1,ConditionalAnd,$3)}
+  | Expr EQ Expr                     {BinaryExpression($1,Equal,$3)}
+  | Expr NE Expr                     {BinaryExpression($1,NotEqual,$3)}
+  | Expr LE Expr                     {BinaryExpression($1,LessEqual,$3)}
+  | Expr GE Expr                     {BinaryExpression($1,GreaterEqual,$3)}
+  | Expr LT Expr                     {BinaryExpression($1,Less,$3)}
+  | Expr GT Expr                     {BinaryExpression($1,Greater,$3)}
+  | Expr PLUS Expr                   {BinaryExpression($1,Add,$3)}
+  | Expr MINUS Expr                  {BinaryExpression($1,Subtract,$3)}
+  | Expr TIMES Expr                  {BinaryExpression($1,Multiply,$3)}
+  | Expr DIV Expr                    {BinaryExpression($1,Divide,$3)}
+  | Expr MOD Expr                    {BinaryExpression($1,Modulus,$3)}
+  | NOT Expr                         {UnaryExpression(LogicalNegate,$2)}
+  | MINUS Expr                       {UnaryExpression(Negate,$2)}
+  | PLUS Expr                        {UnaryExpression(Identity,$2)}
+  | LPAR Expr RPAR                   {$2}
+  | IDENT                            {IdentifierExpression {Identifier = $1;}}
+  | IDENT LBRACK Expr RBRACK         {ArrayIdentifierExpression({Identifier = $1;},$3)}
+  | IDENT LPAR Arg_list RPAR         {FunctionCallExpression($1,$3)}
+  | IDENT DOT SIZE                   {ArraySizeExpression {Identifier = $1;}}
+  | TRUE                             {LiteralExpression (BoolLiteral true)}
+  | FALSE                            {LiteralExpression (BoolLiteral false)}
+  | INT_LIT                          {LiteralExpression (IntLiteral $1)}
+  | FLOAT_LIT                        {LiteralExpression (FloatLiteral $1)}
+  | NEW Type_spec LBRACK Expr RBRACK {ArrayAllocationExpression($2,$4)}
+
+Arg_list:
+    Expr COMMA Arg_list              {$1::$3}
+  | Expr                             {[$1]}
+
+Args:
+    Arg_list                         {$1}
+  |                                  {[]}      
