@@ -83,24 +83,29 @@ Stmt_list:
                                      {[]}
   | Stmt Stmt_list                   {$1::$2}
 
-Stmt:
+Stmt: 
+    StmtM                               { $1 }
+  | StmtU                               { $1 }
+;
+
+
+StmtM:
     Expr_stmt                        {ExpressionStatement($1)}
   | Compound_stmt                    {CompoundStatement($1)}
-  | If_stmt                          {$1}
-  | While_stmt                       {$1}
+  | IF LPAR Expr RPAR StmtM ELSE StmtM {IfStatement($3,$5,Some($7))}
+  | WHILE LPAR Expr RPAR Stmt        {WhileStatement($3,$5)}
   | Return_stmt                      {$1}
   | BREAK SEMI                       {BreakStatement}
+
+StmtU:
+    IF LPAR Expr RPAR StmtM ELSE StmtU  { IfStatement($3, $5, Some($7))}
+  | IF LPAR Expr RPAR Stmt              { IfStatement($3, $5, None) }
+  | WHILE LPAR Expr RPAR StmtU          { WhileStatement($3, $5)    }
+;
 
 Expr_stmt:
     Expr SEMI                        {Expression($1)}
   | SEMI                             {Nop}
-
-While_stmt:
-    WHILE LPAR Expr RPAR Stmt        {WhileStatement($3,$5)}
-
-If_stmt:
-    IF LPAR Expr RPAR Stmt           {IfStatement($3,$5,None)}
-  | IF LPAR Expr RPAR Stmt ELSE Stmt {IfStatement($3,$5,Some($7))}
 
 Return_stmt:
     RETURN SEMI                      {ReturnStatement(None)}
