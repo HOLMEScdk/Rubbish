@@ -1,4 +1,4 @@
-module cdk
+module InterType
 open Absyn
 
 (* [(stringname * dataType),()] *)
@@ -25,7 +25,7 @@ type InterType=
   | TypI of int
   | TypF of float
   | TypS of string
-  | TypA of InterType list
+  | TypA of InterType list 
   | TypL of InterType list
   | TypFun of paramdecs * stmt
   | Abort of string
@@ -174,20 +174,59 @@ let rec exec (stmt:stmt) (varEnv : varEnv) (store : store) (inSign:inSign): (var
 *)
 and eval (e:expr) (varEnv:varEnv) (store:store) : InterType * varEnv * store = 
     match e with
-    | Access acc     -> let (loc, store1) = access acc varEnv store //获得变量地址
-                        (getSto store1 loc, varEnv,store1) //访问变量的地址，以获得值
-    | Assign(acc, e) -> try
-                            let (loc, store1) = access acc varEnv store //获得左值的地址
-                            let (res, varEnv2 ,store2) = eval e varEnv  store1 //对右值进行运算
-                            (res, varEnv2,setSto store2 loc res)     //将左值地址对应到右值之中
-                        with
-                            | q -> 
-                                let (list,loc) = varEnv
-                                match acc with
-                                | AccVar x ->
-                                    let varEnv2 = ((x,loc)::list,loc+1)
-                                    let (res,varEnv3,store3) = eval e varEnv2 store
-                                    (res,varEnv3,(setSto store3 loc res))
+    | Access acc     -> 
+        let rec loop accitem (varEnv:varEnv) (store:store) = 
+            match accitem with
+            | AccVar x -> 
+                let(loc,store1) = (lookup (fst varEnv) x, store) //获得变量地址
+                (getSto store1 loc, varEnv,store1)//访问变量的地址，以获得值
+            | AccIndex(name,index) -> 
+                let (InterType1,varEnv1,store1) = eval index varEnv store
+                let (InterType2,varEnv2,store2) = loop name varEnv1 store1
+                match InterType1 with
+                | TypI i ->
+                    match InterType2 with
+                    | TypA a -> (a.Item i,varEnv2,store2)
+                    | TypL l -> (l.Item i,varEnv2,store2)
+        loop acc varEnv store
+    | Assign(acc, e) -> 
+        let (res, varEnv2 ,store2) = eval e varEnv store //对右值进行运算
+        let rec loop accitem (varEnv:varEnv) (store:store):int*varEnv*store*int list = 
+            match accitem with
+            | AccVar x -> 
+                try
+                    let(loc,store1) = (lookup (fst varEnv) x, store) //获得变量地址
+                    (loc, varEnv,store1,[])//访问变量的地址，以获得值
+                with
+                | q->
+                    let (list,loc) = varEnv2
+                    let varEnv6 = ((x,loc)::list,loc+1)
+                    (loc,varEnv6,store,[])
+            | AccIndex(name,index) -> 
+                let (InterType1,varEnv1,store1) = eval index varEnv store
+                let (loc2,varEnv2,store2,lists) = loop name varEnv1 store1
+                match InterType1 with
+                | TypI i -> (loc2,varEnv2,store2,lists@[i])
+        let(loc3,varEnv3,store3,list3) = loop acc varEnv store
+        if list3.Length = 0 then 
+                let store4 = setSto store3 loc3 res
+                (res,varEnv3,store4)
+            else
+                let value = getSto store3 loc3
+                let rec loop2 accitem2 (depth:int):InterType = 
+                    match accitem2 with
+                    | TypA a -> //判断是不是为数组
+                        let rec loop3 item3 (index2:int)(depth:int):InterType list = //
+                            match item3 with
+                            | [] -> []
+                            | si::sr -> if (list3.Item depth)=index2 then //判断index是否与输入的index重合，如果重合
+                                                                        if depth=list3.Length then [res]@(loop3 sr (index2+1) depth) //到最底层
+                                                                                    else  [(loop2 si (depth+1))]@(loop3 sr (index2+1) depth)    //未到最底层
+                                                                     else //如果不重合
+                                                                        [si]@(loop3 sr (index2+1) depth)
+                        TypA(loop3 a 0 depth)
+                    | _ -> accitem2
+                ((loop2 value 0),varEnv3,store3)
     | CstI i         -> (TypI i, varEnv,store)
     | CstF f         -> (TypF f, varEnv,store)
     | CstS s         -> (TypS s, varEnv,store)
@@ -393,16 +432,18 @@ and eval (e:expr) (varEnv:varEnv) (store:store) : InterType * varEnv * store =
     | Call(f, es) -> callfun f es varEnv  store
 
 (* Record the position of stack by map (store)*)
-and access acc (varEnv:varEnv) (store:store) : address * store =  //去访问变量，获得对应地址关系
+(*and access acc (varEnv:varEnv) (store:store) string : address * store =  //去访问变量，获得对应地址关系
     match acc with
     | AccVar x           -> (lookup (fst varEnv) x, store)
-    | AccIndex(acc, idx) ->  failwith("pass")
-    (*  let (a, store1) = access acc varEnv store
+    | AccIndex(acc, idx) ->  
+      let (a, store1) = access acc varEnv store
       let aval = getSto store1 a
       let (i, store2) = eval idx varEnv store1
       match aval with
-      | TypI(aa) -> match i with
-                    | TypI(ii) -> (aa + ii, store2) *)
+      | TypA(aa) -> match i with
+                    | TypI(ii) -> (aa + ii, store2)
+      | TypL(aa) -> match i with
+                    | TypI(ii) -> *)
       
 
 and evals es varEnv store : InterType list * varEnv * store = 
