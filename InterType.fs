@@ -163,6 +163,7 @@ let rec exec (stmt:stmt) (varEnv : varEnv) (store : store) (inSign:inSign): (var
                 let (inter1,varEnv1,store1) = eval v1 varEnv store
                 (varEnv1,store1,SignReturn,Some(inter1))
             | None -> (varEnv,store,SignReturn,None)
+    | ExSemi -> (varEnv,store,SignOther,None)
 
 (* 
 * 表达式执行函数
@@ -207,26 +208,28 @@ and eval (e:expr) (varEnv:varEnv) (store:store) : InterType * varEnv * store =
                 let (loc2,varEnv2,store2,lists) = loop name varEnv1 store1
                 match InterType1 with
                 | TypI i -> (loc2,varEnv2,store2,lists@[i])
-        let(loc3,varEnv3,store3,list3) = loop acc varEnv store
+        let(loc3,varEnv3,store3,list3) = loop acc varEnv store//获得左值和访问序列
         if list3.Length = 0 then 
                 let store4 = setSto store3 loc3 res
-                (res,varEnv3,store4)
-            else
-                let value = getSto store3 loc3
+                (res,varEnv3,store4)//不是数组访问
+            else//数组访问
+                let value = getSto store3 loc3 //获得数组的值
                 let rec loop2 accitem2 (depth:int):InterType = 
                     match accitem2 with
-                    | TypA a -> //判断是不是为数组
+                    | TypA a -> //为数组
                         let rec loop3 item3 (index2:int)(depth:int):InterType list = //
                             match item3 with
                             | [] -> []
                             | si::sr -> if (list3.Item depth)=index2 then //判断index是否与输入的index重合，如果重合
-                                                                        if depth=list3.Length then [res]@(loop3 sr (index2+1) depth) //到最底层
+                                                                        if depth=list3.Length-1 then [res]@(loop3 sr (index2+1) depth) //到最底层
                                                                                     else  [(loop2 si (depth+1))]@(loop3 sr (index2+1) depth)    //未到最底层
                                                                      else //如果不重合
                                                                         [si]@(loop3 sr (index2+1) depth)
                         TypA(loop3 a 0 depth)
                     | _ -> accitem2
-                ((loop2 value 0),varEnv3,store3)
+                let tmp =  (loop2 value 0)
+                let store4 = setSto store3 loc3 tmp
+                (tmp,varEnv3,store4)
     | CstI i         -> (TypI i, varEnv,store)
     | CstF f         -> (TypF f, varEnv,store)
     | CstS s         -> (TypS s, varEnv,store)
