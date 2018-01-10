@@ -1,4 +1,4 @@
-﻿module MiniC.Compiler.Ast
+﻿module MiniC.Compiler.AbstractTree
 
 type Program = Declaration list
 
