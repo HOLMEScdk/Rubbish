@@ -7,6 +7,7 @@ type token =
   | TRUE
   | FALSE
   | IDENT of (string)
+  | CHAR_LIT of (string)
   | EQ
   | NE
   | GT
@@ -35,6 +36,7 @@ type token =
   | INT
   | FLOAT
   | BOOL
+  | CHAR
   | BREAK
   | WHILE
   | IF
@@ -49,6 +51,7 @@ type tokenId =
     | TOKEN_TRUE
     | TOKEN_FALSE
     | TOKEN_IDENT
+    | TOKEN_CHAR_LIT
     | TOKEN_EQ
     | TOKEN_NE
     | TOKEN_GT
@@ -77,6 +80,7 @@ type tokenId =
     | TOKEN_INT
     | TOKEN_FLOAT
     | TOKEN_BOOL
+    | TOKEN_CHAR
     | TOKEN_BREAK
     | TOKEN_WHILE
     | TOKEN_IF
@@ -121,4 +125,4 @@ val prodIdxToNonTerminal: int -> nonTerminalId
 
 /// This function gets the name of a token as a string
 val token_to_string: token -> string
-val Main : (Microsoft.FSharp.Text.Lexing.LexBuffer<'cty> -> token) -> Microsoft.FSharp.Text.Lexing.LexBuffer<'cty> -> (MiniC.Compiler.Ast.Program) 
+val Main : (Microsoft.FSharp.Text.Lexing.LexBuffer<'cty> -> token) -> Microsoft.FSharp.Text.Lexing.LexBuffer<'cty> -> (RBC.AbstractTree.Program) 

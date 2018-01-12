@@ -1,28 +1,23 @@
 %{
-(*	File MicroC/CPar.fsy 
-	Parser specification for micro-C, a small imperative language
-	sestoft@itu.dk * 2009-09-29
-	No (real) shift/reduce conflicts thanks to Niels Kokholm.
-*)
 
-open MiniC.Compiler.Ast
+open RBC.AbstractTree
 
 // Vardesc 返回的是一个 元组 (g,s)
 // g是类型构造函数，s是变量名
 %}
 %token BREAK WHILE IF NEW ELSE RETURN SIZE
-%token VOID INT FLOAT BOOL 
+%token VOID INT FLOAT BOOL CHAR
 %token LPAR RPAR LBRACE RBRACE LBRACK RBRACK SEMI COMMA ASSIGN DOT
 %token PLUS MINUS TIMES DIV MOD OR AND NOT
 %token EQ NE GT LT GE LE
-%token <string> IDENT
+%token <string> IDENT CHAR_LIT
 %token TRUE FALSE
 %token <int> INT_LIT
 %token <float> FLOAT_LIT
 %token EOF
 
 %start Main 
-%type <MiniC.Compiler.Ast.Program> Main 
+%type <RBC.AbstractTree.Program> Main 
 %%
 
 Main:
@@ -52,7 +47,7 @@ Type_spec:
   | BOOL                             {Bool}
   | INT                              {Int}
   | FLOAT                            {Float}
-
+  | CHAR                             {Char}
 Fun_decl:
     Type_spec IDENT LPAR Params RPAR Compound_stmt {FunctionDeclaration($1,$2,$4,$6)}
 
@@ -139,6 +134,7 @@ Expr:
   | FALSE                            {LiteralExpression (BoolLiteral false)}
   | INT_LIT                          {LiteralExpression (IntLiteral $1)}
   | FLOAT_LIT                        {LiteralExpression (FloatLiteral $1)}
+  | CHAR_LIT                         {LiteralExpression (CharLiteral $1)}
   | NEW Type_spec LBRACK Expr RBRACK {ArrayAllocationExpression($2,$4)}
 
 Arg_list:

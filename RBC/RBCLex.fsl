@@ -1,12 +1,9 @@
 {
- (* File MicroC/CLex.lex
-    Lexer specification for micro-C, a small imperative language
-  *)
 
-module CLex
+module RBCLex
   
 open Microsoft.FSharp.Text.Lexing
-open CPar;
+open RBCPar;
 
 let lexemeAsString lexbuf = 
     LexBuffer<char>.LexemeString lexbuf
@@ -19,6 +16,8 @@ let keyword s =
     | "void"    -> VOID 
     | "int"     -> INT
     | "float"   -> FLOAT
+    | "char"    -> CHAR
+    | "bool"    -> BOOL
     | "false"   -> FALSE
     | "true"    -> TRUE
     | "if"      -> IF
@@ -79,6 +78,7 @@ rule Token = parse
   | "//"            { EndLineComment lexbuf; Token lexbuf }
   | "/*"            { Comment lexbuf; Token lexbuf }
   | eof             { EOF }
+  | '\''            { CHAR_LIT(String [] lexbuf) }  
   | _               { failwith "Lexer error: illegal symbol" }
 
 and Comment = parse
@@ -94,7 +94,7 @@ and EndLineComment = parse
    | _              { EndLineComment lexbuf }
 
 and String chars = parse 
-  | '"'
+  | '\''
       { Microsoft.FSharp.Core.String.concat "" (List.map string (List.rev chars)) }
   | '\\' ['\\' '"' 'a' 'b' 't' 'n' 'v' 'f' 'r']
       { String (cEscape (lexemeAsString lexbuf) :: chars) lexbuf }

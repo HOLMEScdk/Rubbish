@@ -1,11 +1,9 @@
-﻿namespace MiniC.Compiler
-
-type CompilerException(message : string) =
+﻿namespace RBC
+type RBCException(message : string) =
     inherit System.Exception(message)
 
-module CompilerErrors =
-    let create m = CompilerException m
-
+module RBCErrors =
+    let create m = RBCException m
     let lexerError a                  = create (sprintf "MC001 Lexer error: %s" a)
     let parserError a                 = create (sprintf "MC002 Parser error: %s" a)
     let variableAlreadyDefined a      = create (sprintf "MC003 A variable named '%s' is already defined in this scope" a)

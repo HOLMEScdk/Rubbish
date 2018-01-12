@@ -1,39 +1,9 @@
-﻿namespace MiniC.Compiler
-
+﻿module RBC.MakeCIL
 open System.Collections.Generic
-open SemanticAnalysis
-open IL
-type ILVariableScope =
-    | FieldScope of ILVariable
-    | ArgumentScope of int16
-    | LocalScope of int16
-
-type VariableMappingDictionary = Dictionary<AbstractTree.VariableDeclaration, ILVariableScope>
-
-module ILBuilderUtilities =    (* define ILBuilder's type as follows some example*)
-    let typeOf =
-        function
-        | AbstractTree.Void  -> typeof<System.Void>
-        | AbstractTree.Bool  -> typeof<bool>
-        | AbstractTree.Int   -> typeof<int>
-        | AbstractTree.Float -> typeof<float>
-
-    let createILVariable =
-        function
-        | AbstractTree.ScalarVariableDeclaration(t, i) as d ->
-            {
-                ILVariable.Type = typeOf t; 
-                Name = i;
-            }
-        | AbstractTree.ArrayVariableDeclaration(t, i) as d ->
-            {
-                ILVariable.Type = (typeOf t).MakeArrayType(); 
-                Name = i;
-            }
-
-open ILBuilderUtilities
-
-type ILMethodBuilder(semanticAnalysisResult : SemanticAnalysisResult,
+open RBC.GrammerAnalysis
+open RBC.CIL
+open RBC.CILturnUtili
+type CILBuildMethod(GrammerAnalysisResult : GrammerAnalysisResult,
                      variableMappings : VariableMappingDictionary) =
     let mutable argumentIndex = 0s
     let mutable localIndex = 0s
@@ -42,7 +12,7 @@ type ILMethodBuilder(semanticAnalysisResult : SemanticAnalysisResult,
     let currentWhileStatementEndLabel = Stack<ILLabel>()
 
     let lookupILVariableScope identifierRef =    (* use the identifier to find its variable field(ILVariableScope)*)
-        let declaration = semanticAnalysisResult.SymbolTable.[identifierRef]
+        let declaration = GrammerAnalysisResult.SymbolTable.[identifierRef]
         variableMappings.[declaration]  (* get its ILVariableScope *)
 
     let makeLabel() =
@@ -115,7 +85,7 @@ type ILMethodBuilder(semanticAnalysisResult : SemanticAnalysisResult,
                           processExpression e2
                           [ Dup ]
                           [ Stloc arrayAssignmentLocals.[ae] ]
-                          [ Stelem (typeOf (semanticAnalysisResult.SymbolTable.GetIdentifierTypeSpec i).Type) ]
+                          [ Stelem (typeOf (GrammerAnalysisResult.SymbolTable.GetIdentifierTypeSpec i).Type) ]
                           [ Ldloc arrayAssignmentLocals.[ae] ] ]
         | AbstractTree.BinaryExpression(a, b, c) -> processBinaryExpression (a, b, c)
         | AbstractTree.UnaryExpression(op, e) ->
@@ -125,7 +95,7 @@ type ILMethodBuilder(semanticAnalysisResult : SemanticAnalysisResult,
         | AbstractTree.ArrayIdentifierExpression(i, e) ->  (*1. push the arr to stack *)
             List.concat [ processIdentifierLoad i  (*2. push the index into stack*)
                           processExpression e      (*3.call ldelem pop array and index and then push its value a[index]*)
-                          [ Ldelem (typeOf (semanticAnalysisResult.SymbolTable.GetIdentifierTypeSpec i).Type) ] ]
+                          [ Ldelem (typeOf (GrammerAnalysisResult.SymbolTable.GetIdentifierTypeSpec i).Type) ] ]
         | AbstractTree.FunctionCallExpression(i, a) ->
             List.concat [ a |> List.collect processExpression
                           [ Call i ] ]
@@ -137,6 +107,7 @@ type ILMethodBuilder(semanticAnalysisResult : SemanticAnalysisResult,
             | AbstractTree.IntLiteral(x)   -> [ Ldc_I4(x) ]
             | AbstractTree.FloatLiteral(x) -> [ Ldc_R8(x) ]
             | AbstractTree.BoolLiteral(x)  -> [ (if x then Ldc_I4(1) else Ldc_I4(0)) ]
+            | AbstractTree.CharLiteral(x)  -> if x.Length=1 then [ Ldc_I4(int(x.[0])) ] else failwith "error";
         | AbstractTree.ArrayAllocationExpression(t, e) ->
             List.concat [ processExpression e        (* get the new array size and then create it *)
                           [ Newarr (typeOf t) ] ]
@@ -153,7 +124,7 @@ type ILMethodBuilder(semanticAnalysisResult : SemanticAnalysisResult,
         | AbstractTree.ExpressionStatement(x) ->
             match x with
             | AbstractTree.Expression(x) ->
-                let isNotVoid = semanticAnalysisResult.ExpressionTypes.[x].Type <> AbstractTree.Void
+                let isNotVoid = GrammerAnalysisResult.ExpressionTypes.[x].Type <> AbstractTree.Void
                 List.concat [ processExpression x
                               (if isNotVoid then [ Pop ] else []) ]
                 
@@ -239,7 +210,7 @@ type ILMethodBuilder(semanticAnalysisResult : SemanticAnalysisResult,
             | AbstractTree.ScalarAssignmentExpression(i, e) -> fromExpression e
             | AbstractTree.ArrayAssignmentExpression(i, e1, e2) as ae ->
                 let v = {
-                    ILVariable.Type = typeOf ((semanticAnalysisResult.SymbolTable.GetIdentifierTypeSpec i).Type); 
+                    ILVariable.Type = typeOf ((GrammerAnalysisResult.SymbolTable.GetIdentifierTypeSpec i).Type); 
                     Name = "ArrayAssignmentTemp" + string localIndex;
                 }
                 arrayAssignmentLocals.Add(ae, localIndex);
@@ -263,8 +234,8 @@ type ILMethodBuilder(semanticAnalysisResult : SemanticAnalysisResult,
                                        statements |> List.collect collectLocalDeclarations ]
             Body       = statements |> List.collect processStatement;
         }
-
-type ILBuilder(semanticAnalysisResult) =
+(*
+type ILBuilder(GrammerAnalysisResult) =
     let variableMappings = new VariableMappingDictionary(HashIdentity.Reference)
 
     let processStaticVariableDeclaration d =
@@ -288,12 +259,12 @@ type ILBuilder(semanticAnalysisResult) =
                 | _ -> None)
 
         let processFunctionDeclaration functionDeclaration =
-            let ilMethodBuilder = new ILMethodBuilder(semanticAnalysisResult, variableMappings)
+            let ilMethodBuilder = new ILMethodBuilder(GrammerAnalysisResult, variableMappings)
             ilMethodBuilder.BuildMethod functionDeclaration
 
         let builtInMethods = [       (* contains read and print operation*)
             {
-                Name = "iread";
+                Name = "readInt";
                 ReturnType = typeof<int>;
                 Parameters = [];
                 Locals = [];
@@ -302,7 +273,7 @@ type ILBuilder(semanticAnalysisResult) =
                          Ret ];
             };
             {
-                Name = "fread";
+                Name = "readFloat";
                 ReturnType = typeof<float>;
                 Parameters = [];
                 Locals = [];
@@ -311,7 +282,7 @@ type ILBuilder(semanticAnalysisResult) =
                          Ret ];
             };
             {
-                Name = "iprint";
+                Name = "printI";
                 ReturnType = typeof<System.Void>;
                 Parameters = [ { Type = typeof<int>; Name = "value"; }];
                 Locals = [];
@@ -320,17 +291,26 @@ type ILBuilder(semanticAnalysisResult) =
                          Ret ];
             };
             {
-                Name = "fprint";
+                Name = "printF";
                 ReturnType = typeof<System.Void>;
                 Parameters = [ { Type = typeof<float>; Name = "value"; }];
                 Locals = [];
                 Body = [ Ldarg(0s)    (* need int16 *)
                          CallClr(typeof<System.Console>.GetMethod("WriteLine", [| typeof<float> |]))
                          Ret ];
-            } ]
-
-        {
+            }
+            {
+                Name = "printCh";
+                ReturnType = typeof<System.Void>;
+                Parameters = [ { Type = typeof<char>; Name = "value"; }];
+                Locals = [];
+                Body = [ Ldarg(0s)    (* need int16 *)
+                         CallClr(typeof<System.Console>.GetMethod("WriteLine", [| typeof<char> |]))
+                         Ret ];
+            }]
+        {         (*record*)
             Fields  = variableDeclarations |> List.map processStaticVariableDeclaration;   (* each declaration map into this function *)
             Methods = List.concat [ builtInMethods
                                     functionDeclarations |> List.map processFunctionDeclaration ];
         }
+*)

@@ -1,4 +1,4 @@
-﻿module MiniC.Compiler.AbstractTree
+﻿module RBC.AbstractTree
 
 type Program = Declaration list
 
@@ -11,12 +11,7 @@ and TypeSpec =
     | Bool
     | Int
     | Float
-    override x.ToString() =
-        match x with
-        | Void  -> "void"
-        | Bool  -> "bool"
-        | Int   -> "int"
-        | Float -> "float"
+    | Char
 
 and VariableDeclaration =                          (* void/int/../ define var and arr *)
     | ScalarVariableDeclaration of TypeSpec * Identifier
@@ -76,21 +71,6 @@ and BinaryOperator =
     | Multiply
     | Divide
     | Modulus
-    override x.ToString() =
-        match x with
-        | ConditionalOr  -> "||"
-        | Equal          -> "=="
-        | NotEqual       -> "!="
-        | LessEqual      -> "<="
-        | Less           -> "<"
-        | GreaterEqual   -> ">="
-        | Greater        -> ">"
-        | ConditionalAnd -> "&&"
-        | Add            -> "+"
-        | Subtract       -> "-"
-        | Multiply       -> "*"
-        | Divide         -> "/"
-        | Modulus        -> "%"
 
 and UnaryOperator =
     | LogicalNegate
@@ -103,8 +83,4 @@ and Literal =
     | BoolLiteral of bool
     | IntLiteral of int
     | FloatLiteral of float
-    override x.ToString() =
-        match x with
-        | BoolLiteral(b)  -> b.ToString()
-        | IntLiteral(i)   -> i.ToString()
-        | FloatLiteral(f) -> f.ToString()
+    | CharLiteral of string
