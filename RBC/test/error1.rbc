@@ -1,0 +1,6 @@
+﻿int x;
+bool x;
+
+void main(void) {
+	return;
+}

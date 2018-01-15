@@ -17,9 +17,9 @@ type MethodGenerator(typeBuilder : TypeBuilder, ilMethod : ILMethod,
 
     let ilGenerator = methodBuilder.GetILGenerator()
 
-    let labelMappings = new Dictionary<ILLabel, Label>()
+    let labelMappings = new Dictionary<ILLabel, Label>() (*use a dict to track label*)
 
-    let getLabel ilLabel =
+    let getLabel ilLabel =  (*Towards a illabel create a new one if doesn't exist and return it*)
         if labelMappings.ContainsKey ilLabel then
             labelMappings.[ilLabel]
         else
@@ -27,7 +27,8 @@ type MethodGenerator(typeBuilder : TypeBuilder, ilMethod : ILMethod,
             labelMappings.Add(ilLabel, label)
             label
 
-    let emitOpCode (ilGenerator : ILGenerator) = function
+    let emitOpCode (ilGenerator : ILGenerator) = 
+        function
         | Add        -> ilGenerator.Emit(OpCodes.Add)
         | Br(l)      -> ilGenerator.Emit(OpCodes.Br, getLabel l)
         | Brfalse(l) -> ilGenerator.Emit(OpCodes.Brfalse, getLabel l)
@@ -68,7 +69,7 @@ type MethodGenerator(typeBuilder : TypeBuilder, ilMethod : ILMethod,
     let emitLocal (ilGenerator : ILGenerator) variable =
         ilGenerator.DeclareLocal(variable.Type).SetLocalSymInfo(variable.Name)
 
-    member x.Generate() =
+    member x.Generate() = (*generate code as follow instructions*)
         methodBuilder.SetReturnType ilMethod.ReturnType
         methodBuilder.SetParameters (List.toArray (ilMethod.Parameters |> List.map (fun p -> p.Type)))
         
@@ -89,7 +90,7 @@ type MethodGenerator(typeBuilder : TypeBuilder, ilMethod : ILMethod,
 
 type CodeGenerator(moduleBuilder : ModuleBuilder, ilClass : ILClass, moduleName : string) =
     let fieldMappings = new FieldMappingDictionary()
-
+    (* store the mapping from Fields to System.Reflection.FieldInfo*)
     let generateField (typeBuilder : TypeBuilder) (ilField : ILVariable) =
         let fieldAttributes = FieldAttributes.Public ||| FieldAttributes.Static
         let fieldBuilder = typeBuilder.DefineField(ilField.Name, ilField.Type, fieldAttributes)

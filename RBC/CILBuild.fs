@@ -12,7 +12,7 @@ type CILBuild(GrammerAnalysisResult) =
         variableMappings.Add(d, FieldScope(v))   (*AbstractTree.VariableDeclaration, ILVariableScope*)
         v  (* name and type *)
 
-    member x.BuildClass (program : AbstractTree.Program) =
+    member x.BuildClass (program : AbstractTree.Program) =   (*start from here*)
         let variableDeclarations =    (* program = Declaration li*)
             program
             |> List.choose (fun x ->  (* find which one meets the requirements in choose function*)
@@ -77,7 +77,7 @@ type CILBuild(GrammerAnalysisResult) =
                          CallClr(typeof<System.Console>.GetMethod("WriteLine", [| typeof<char> |]))
                          Ret ];
             }]
-        {         (*record*)
+        {         (* A ILClass record defined in CIL*)
             Fields  = variableDeclarations |> List.map processStaticVariableDeclaration;   (* each declaration map into this function *)
             Methods = List.concat [ builtInMethods
                                     functionDeclarations |> List.map processFunctionDeclaration ];

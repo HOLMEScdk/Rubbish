@@ -3,11 +3,20 @@
 open System
 (* define intermediate presenation *)
 (*fields and methods start*)
+(* for each function in the program,generate an MSIL method. 
+For each global variable declaration, generate a field.*)
+
 type ILClass = {
         Fields  : ILVariable list;
         Methods : ILMethod list;
     }
 (*the method's content*)
+and ILVariable = {(*System.Type*)
+        Type  : Type;
+        Name  : string;
+    }
+
+
 and ILMethod = {
         Name       : string;
         ReturnType : Type;
@@ -16,16 +25,11 @@ and ILMethod = {
         Body       : ILOpCode list;
     }
 
-and ILVariable = {
-        Type  : Type;
-        Name  : string;
-    }
-
 and ILLabel = int
 
 and ILOpCode =
     | Add
-    | Br of ILLabel
+    | Br of ILLabel    (* Br needs to know the ILLabel to break *)
     | Brfalse of ILLabel
     | Brtrue of ILLabel
     | Call of string

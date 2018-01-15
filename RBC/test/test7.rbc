@@ -1,0 +1,20 @@
+int isqrt(int a, int guess) { 
+	int x;
+	if (guess == (x = (guess + a/guess)/2)) // guess via Newton’s method
+		return guess;
+	else
+		return 0;
+	return isqrt(a, x); // tail recurse
+}
+
+int num;
+float f;
+
+int main(void) {
+	num = readInt();
+	printI(isqrt(num, num/2));
+	
+	f = readFloat();
+	printF(f * 2.0);
+	return 0;
+}

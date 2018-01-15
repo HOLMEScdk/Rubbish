@@ -10,6 +10,6 @@ int fib(int n) {
 int main(void) {
 	int ans;
 	ans = fib(10);
-	iprint(ans);
+	printI(ans);
 	return 0;
 }

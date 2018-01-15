@@ -1,0 +1,32 @@
+﻿int field[];
+float xx[];
+int func(int array[ ]) {
+	return array[3 - field[0]];
+}
+
+int main(void) {
+	float i[];
+	int j[];
+	int k;
+	int kk;
+	int kkk;
+	bool b;
+    char x;
+	field = new int[2];
+	xx = new float[3];
+	xx[0] = 1.2;
+	field[0] = 1;
+	field[1] = 2;
+    //b = true || false;
+	//field[0] = field[1] | 5;
+	printI(field.size);
+	i = new float[0];
+	x = 'c';
+	printCh(x);
+	j = new int[3];
+	j[0 + 0] = -1;
+	k = j[1] = j[0] - 2;
+	j[2] = 16;
+	printI(func(j));
+	return func(j) + field.size + k;
+}

@@ -29,6 +29,6 @@ int main(void) {
 	t5 = 5 % 3;
 
 	b = !b;
-	iprint(t1);
+	printI(t1);
 	return t1 + t2 + t3 + t4 + t5;
 }

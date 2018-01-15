@@ -12,19 +12,21 @@ let compile (assemblyBuilder : AssemblyBuilder) code =
     let assemblyName = assemblyBuilder.GetName()
     let moduleBuilder = assemblyBuilder.DefineDynamicModule(assemblyName.Name, assemblyName.Name + ".exe", true)
 
-    (*let program = Parser.parse code*)
+    (*let program = parse code*)
     let program = RBCPar.Main RBCLex.Token (Lexing.LexBuffer<char>.FromString(code))
     let temp = program.ToString()
     printfn format temp
-    let GrammerAnalysisResult = GrammerAnalysis.analyze program
+    let GrammerAnalysisResult = GrammerAnalysis.analyze program (*analyze AST*)
     let ilBuilder = new CILBuild(GrammerAnalysisResult)
     let ilBuilder_String = ilBuilder.ToString()
     printfn format ilBuilder_String
     printfn "%s" "--------------------------"
-    let ilClass = ilBuilder.BuildClass program
+
+    let ilClass = ilBuilder.BuildClass program (*get intermediate representation*)
     let ilClass_String = ilClass.ToString()
     printfn format ilClass_String
-    let codeGenerator = new CodeGenerator(moduleBuilder, ilClass, assemblyName.Name)
+
+    let codeGenerator = new CodeGenerator(moduleBuilder, ilClass, assemblyName.Name)(*codegen*)
     let (compiledType, entryPoint) = codeGenerator.GenerateType()
     assemblyBuilder.SetEntryPoint entryPoint
     (compiledType, entryPoint)
