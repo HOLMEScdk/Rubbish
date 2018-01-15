@@ -7,18 +7,7 @@ type 'data env = (string * 'data) list
 (* paramdecs datastructure *)
 type paramdecs = string list  
 
-type outSign =
-  | SignBreak
-  | SignContinue
-  | SignReturn
-  | SignOther
 
-type inSign=
-  | SignWhile
-  | SignFor
-  | SignSwitch
-  | SignFunc
-  | SignMain
 
 type InterType=
   | TypB of bool
@@ -32,6 +21,20 @@ type InterType=
   | TypeBreak
   | TypeContinue
 
+type outSign =
+  | SignBreak
+  | SignContinue
+  | SignReturn
+  | SignOther
+  | SignException of InterType
+
+type inSign=
+  | SignWhile
+  | SignFor
+  | SignSwitch
+  | SignFunc
+  | SignMain
+  | SignTryCatch
 
 (* find key-val *)
 let rec lookup env x = 
@@ -153,16 +156,31 @@ let rec exec (stmt:stmt) (varEnv : varEnv) (store : store) (inSign:inSign): (var
           | SignReturn -> (varEnv1,store1,SignReturn,InterType)
           | SignBreak -> (varEnv1,store1,SignBreak,None)
           | SignContinue -> (varEnv1,store1,SignContinue,None)
+          | _ -> (varEnv1,store1,outSign,None)
       let tmp = loop stmts varEnv store
       tmp
-    | For(s, e, stmt1) ->failwith "return not implemented"
-    | TryCatchFinal(stmt1, stmt2, stmt3) ->failwith "return not implemented"
+    | TryCatch(stmt1,expr1,stmt2) -> 
+           match expr1 with
+           | Access(temp1) -> 
+                match temp1 with
+                |  AccVar(temp2)->
+                   let (varEnv1,store1,outSign1,InterType1) = exec stmt1 varEnv store SignTryCatch
+                   match outSign1 with
+                   | SignException(ex) -> 
+                        let (varEnv2,store2) = bindVar temp2 ex varEnv1 store1
+                        let (varEnv3,store3,outSign3,InterType3) = exec (stmt2) (varEnv2) (store2) (inSign)
+                        (varEnv3,store3,outSign3,InterType3)
+                   | _ -> (varEnv1,store1,outSign1,InterType1)
+           | _ -> failwith "error"
     | Return value -> 
             match value with
             | Some(v1) ->
                 let (inter1,varEnv1,store1) = eval v1 varEnv store
                 (varEnv1,store1,SignReturn,Some(inter1))
             | None -> (varEnv,store,SignReturn,None)
+    | Throw ex ->
+            let (exvalue,varEnv1,store1) = eval ex varEnv store
+            (varEnv1,store1,SignException(exvalue),None)
     | ExSemi -> (varEnv,store,SignOther,None)
 
 (* 
@@ -519,6 +537,12 @@ and stmtordec stmtordec (varEnv : varEnv) (store : store) inSign:varEnv*store*ou
                 let (varEnv,store,outSign,InterType) = exec stmt varEnv store inSign 
                 (varEnv,store,SignReturn,InterType)                  //函数遇到return 进行exec操作,此句作用仅判断是否在函数中
             | _->failwith ("Can't return without in func") //函数里面才可以使用return
+        | Throw(e) ->
+            match inSign with
+            | SignTryCatch ->
+                let (varEnv,store,outSign,InterType) = exec stmt varEnv store inSign 
+                (varEnv,store,outSign,InterType)                  //函数遇到return 进行exec操作,此句作用仅判断是否在函数中
+            | _ -> failwith("error")
         | _->
             let (varEnv,store,outSign,InterType) = exec stmt varEnv store inSign
             (varEnv,store,outSign,InterType)
@@ -544,7 +568,7 @@ let rec exectopdecs topdecs (varEnv : varEnv) (store : store):varEnv*store=
             loop sr varEnv1 store1
     loop topdecs varEnv store
 
-(*基本函数*)
+(*主函数*)
 let run (Prog topdecs) = 
     let rec loop topdecs=
         match topdecs with

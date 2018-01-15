@@ -15,7 +15,7 @@ open Absyn
 %token PLUS MINUS TIMES DIV MOD EXPO
 %token EQ NE GT LT GE LE ASSIGN
 %token NOT SEQOR SEQAND SEQXOR
-%token DEF RETURN 
+%token DEF RETURN THROW
 %token EOF
 
 %right ASSIGN             /* lowest precedence */
@@ -80,14 +80,14 @@ Stmt:
   |  RETURN SEMI                           { Return(None)}
   |  RETURN Expr SEMI                      { Return(Some($2))  }
   |  BREAK SEMI                            { Break       }
+  |  THROW Expr SEMI                       { Throw($2)   }
   |  CONTINUE SEMI                         { Continue    }
   |  Block                                 { $1          }
   |  IF LPAR Expr RPAR Stmt IfConJud       { If((Some($3),$5)::$6)}
   |  SWITCH LPAR Expr RPAR LBRACE SwConJud RBRACE { Switch($3,$6)}
   |  WHILE LPAR Expr RPAR Stmt             { While($3,$5) }
   |  FOR LPAR NAME IN RANGE LPAR Expr RPAR RPAR Stmt { For($3,$7,$10)}
-  |  TRY Block CATCH Block                 { TryCatchFinal($2,$4,None) }
-  |  TRY Block CATCH Block FINALLY Block   { TryCatchFinal($2,$4,Some($6))}
+  |  TRY Block CATCH LPAR Expr RPAR Block  { TryCatch($2,$5,$7) }
   |  IMPORT NAME SEMI                      { Import($2)}
   |  LAMBDA Paramdecs COLON Expr           { Lambda($2,$4)            }
 
